@@ -162,7 +162,7 @@ function getDeepLinks(username) {
 const { createClient } = require('@supabase/supabase-js');
 let supabase = null;
 try {
-  supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_KEY);
+  supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY);
 } catch(e) { console.error('Supabase init error:', e.message); }
 
 async function getWhalesFromSupabase(limit = 10, category = null) {
@@ -174,9 +174,9 @@ async function getWhalesFromSupabase(limit = 10, category = null) {
       query = query.contains('tags', targetTags);
     }
     const { data, error } = await query;
-    if (error) { console.error('Supabase query error:', error.message); return null; }
+    if (error) { console.error('Supabase query error:', error.message, error.details); return null; }
     return data;
-  } catch(e) { console.error('Supabase error:', e.message); return null; }
+  } catch(e) { console.error('Supabase fetch error:', e.message); return null; }
 }
 
 function supabaseWhaleToTarget(w, lang) {
