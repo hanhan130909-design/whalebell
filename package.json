@@ -2,13 +2,17 @@
   "name": "whalebell",
   "version": "2.0.0",
   "private": true,
-  "description": "WhaleBell - TikTok\u5316\u5986\u95f4\u72d9\u51fb + \u591a\u7ea7\u88c2\u53d8\u5206\u9500",
+  "description": "WhaleBell - TikTok Vanity Sniper",
+  "main": "railway_start.js",
   "scripts": {
-    "start": "node backend/src/index.js",
-    "dev": "cd backend && node src/index.js",
-    "setup": "cd backend && npm install"
+    "start": "node railway_start.js"
   },
-  "engines": {
-    "node": ">=18.0.0"
+  "dependencies": {
+    "express": "^4.18.2",
+    "ws": "^8.21.0",
+    "@supabase/supabase-js": "^2.106.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "tiktok-live-connector": "^2.1.1-beta1"
   }
 }

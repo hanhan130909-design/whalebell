@@ -1,24 +1,46 @@
-// Railway healthcheck test - minimal server
+/**
+ * WhaleBell Railway Launcher v3
+ */
+const path = require('path');
 const http = require('http');
+const express = require('express');
+const cors = require('cors');
+require('dotenv').config();
+
+const app = express();
 const PORT = process.env.PORT || 3101;
 
-const server = http.createServer((req, res) => {
-  if (req.url === '/health') {
-    res.writeHead(200, {'Content-Type': 'application/json'});
-    res.end(JSON.stringify({status:'ok'}));
-    return;
-  }
-  res.writeHead(200, {'Content-Type': 'text/html'});
-  res.end('<h1>WhaleBell</h1><a href="/sniper.html">Sniper</a>');
+app.use(cors());
+app.use(express.json());
+
+// API Routes
+try { app.use('/api', require('./backend/src/routes')); } catch(e) { console.error('routes fail:', e.message); }
+try { app.use('/api/sniper', require('./backend/src/sniper')); } catch(e) { console.error('sniper fail:', e.message); }
+try { app.use('/api/dist', require('./backend/src/distribution')); } catch(e) { console.error('dist fail:', e.message); }
+
+// Static frontend
+app.use(express.static(path.join(__dirname, 'frontend')));
+
+// Health
+app.get('/health', (req, res) => res.json({ status: 'ok' }));
+
+// Root -> sniper
+app.get('/', (req, res) => res.redirect('/sniper.html'));
+
+const server = http.createServer(app);
+
+// WebSocket
+try {
+  const { initWebSocket } = require('./backend/src/websocket');
+  initWebSocket(server);
+  console.log('🔌 WebSocket ready');
+} catch(e) { console.error('ws fail:', e.message); }
+
+process.on('uncaughtException', (e) => console.error('FATAL:', e.message));
+
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`🐋 WhaleBell on 0.0.0.0:${PORT}`);
+  console.log(`📊 http://localhost:${PORT}/dashboard.html`);
 });
 
-server.on('error', (e) => console.error('SERVER ERROR:', e.message));
-server.on('listening', () => {
-  const addr = server.address();
-  console.log(`READY on ${addr.address}:${addr.port}`);
-});
-
-server.listen(PORT, '0.0.0.0');
-
-// Heartbeat
-setInterval(() => console.log('💓'), 15000);
+setInterval(() => {}, 30000); // keep alive
