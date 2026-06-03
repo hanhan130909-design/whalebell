@@ -147,6 +147,16 @@ function matchTemplate(whaleTags, lang = 'id') {
 /**
  * 生成 Deep Link
  */
+
+function getLangForRegion(regionStr) {
+  if (!regionStr) return 'id';
+  var r = regionStr.toLowerCase();
+  if (r.includes('台湾') || r.includes('taiwan') || r.includes('中国') || r.includes('china') || r.includes('中文')) return 'zh';
+  if (r.includes('马来西亚') || r.includes('malaysia') || r.includes('印度尼西亚') || r.includes('indonesia') || r.includes('印尼')) return 'id';
+  if (r.includes('日本') || r.includes('japan') || r.includes('韩国') || r.includes('korea')) return 'en';
+  return 'id'; // default Indonesian/Malay for SEA
+}
+
 function getDeepLinks(username) {
   return {
     profile: `tiktok://user/${username}`,
@@ -182,7 +192,8 @@ async function getWhalesFromSupabase(limit = 10, category = null) {
 }
 
 function supabaseWhaleToTarget(w, lang) {
-  const template = matchTemplate(w.tags || ['high_level'], lang);
+  var whaleLang = getLangForRegion(w.region) || lang || 'id';
+  const template = matchTemplate(w.tags || ['high_level'], whaleLang);
   const links = getDeepLinks(w.username);
   return {
     id: w.id, username: w.username, nickname: w.nickname || w.username,
@@ -236,7 +247,7 @@ router.get('/targets', async (req, res) => {
   if (!rawTargets || rawTargets.length === 0) {
     rawTargets = TARGETS;
   } else {
-    rawTargets = rawTargets.map(w => supabaseWhaleToTarget(w, language));
+    rawTargets = rawTargets.map(function(w) { return supabaseWhaleToTarget(w, language); });
     // Score and sort
     let scored = rawTargets.map(t => {
       let score = t.level * 10 + (t.isPremium ? 50 : 0);
