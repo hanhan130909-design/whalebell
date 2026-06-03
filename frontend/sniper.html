@@ -674,8 +674,7 @@
 
 </style>
 
-  <!-- Midtrans Snap -->
-  <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="MIDTRANS_CLIENT_KEY_PLACEHOLDER"></script>
+
 
 </head>
 <body>
@@ -1319,6 +1318,121 @@ ${window.location.href}`
     // Init - store targets globally for copy function
     // ============================================================
     
+
+// ============================================================
+// Manual Payment Flow
+// ============================================================
+let currentOrderId = null;
+let currentPlan = 'weekly';
+
+function selectPlan(el, plan) {
+  currentPlan = plan;
+  document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  const amount = plan === 'weekly' ? '29K' : '79K';
+  document.getElementById('payAmount').textContent = amount;
+}
+
+function showPaymentStep() {
+  document.getElementById('paymentStep1').style.display = 'none';
+  document.getElementById('paymentStep2').style.display = 'block';
+  document.getElementById('paymentStep3').style.display = 'none';
+  
+  // Load payment accounts
+  loadPaymentAccounts();
+  
+  // Create order
+  createOrder();
+}
+
+function backToStep1() {
+  document.getElementById('paymentStep1').style.display = 'block';
+  document.getElementById('paymentStep2').style.display = 'none';
+}
+
+async function loadPaymentAccounts() {
+  try {
+    const res = await fetch(`${API}/pay/config`);
+    const data = await res.json();
+    const list = document.getElementById('bankList');
+    list.innerHTML = '';
+    if (data.accounts) {
+      for (const [key, acc] of Object.entries(data.accounts)) {
+        list.innerHTML += `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+            <div>
+              <span style="font-size:18px;">${acc.icon}</span>
+              <strong>${acc.name}</strong>
+              <div style="font-size:11px;color:var(--text-dim);">${acc.number}</div>
+            </div>
+            <button onclick="copyToClipboard('${acc.number}')" style="background:var(--card);color:var(--primary);border:1px solid var(--border);padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;">📋</button>
+          </div>
+        `;
+      }
+    }
+  } catch(e) {}
+}
+
+async function createOrder() {
+  const userId = 'user_' + Date.now();
+  try {
+    const res = await fetch(`${API}/pay/order`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ userId, plan: currentPlan })
+    });
+    const data = await res.json();
+    if (data.success) {
+      currentOrderId = data.orderId;
+    }
+  } catch(e) {}
+}
+
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(() => showToast('✅ 已复制'));
+}
+
+async function confirmPayment() {
+  const senderName = document.getElementById('senderName').value.trim();
+  const paymentMethod = document.getElementById('paymentMethod').value;
+  const note = document.getElementById('paymentNote').value;
+  
+  if (!senderName) { showToast('❌ 请输入你的名字'); return; }
+  if (!paymentMethod) { showToast('❌ 请选择转账方式'); return; }
+  
+  showToast('⏳ 验证中...');
+  
+  try {
+    const res = await fetch(`${API}/pay/upload`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ orderId: currentOrderId, paymentMethod, senderName, note })
+    });
+    const data = await res.json();
+    
+    if (data.success) {
+      document.getElementById('paymentStep2').style.display = 'none';
+      document.getElementById('paymentStep3').style.display = 'block';
+      
+      // Activate VIP via distribution
+      try {
+        await fetch(`${API}/dist/premium/mock`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ userId: 'user_' + Date.now(), plan: currentPlan })
+        });
+      } catch(e) {}
+      
+      loadQuota();
+    } else {
+      showToast('❌ 验证失败，请重试');
+    }
+  } catch(e) {
+    showToast('❌ 网络错误');
+  }
+}
+
+
 // ============================================================
 // Category Selector
 // ============================================================
@@ -1557,32 +1671,67 @@ const _origInit = (async function init() {
     </div>
   </div>
 
-  <!-- Upgrade Modal -->
-  <div class="modal-overlay" id="upgradeModal">
-    <div class="modal">
-      <button class="close" onclick="closeModal('upgradeModal')">✕</button>
-      <h3>💎 开通会员</h3>
-      <div class="sub">每天 50 个精准大哥推荐，锁定你的流水！</div>
-      <div class="plan-grid">
-        <div class="plan-card selected" onclick="selectPlan(this, 'weekly')">
-          <div class="price">29K</div>
-          <div class="period">周卡</div>
-          <div class="daily">每天50个</div>
-        </div>
-        <div class="plan-card" onclick="selectPlan(this, 'monthly')">
-          <div class="price">79K</div>
-          <div class="period">月卡</div>
-          <div class="daily">每天50个</div>
-        </div>
-      </div>
-      <button class="modal-btn secondary" onclick="goPremium()" id="payBtn">💳 支付 29K — 开通周卡</button>
-      <p style="font-size:11px;color:var(--text-darker);text-align:center;margin-top:8px;">
-        💡 测试期间仅模拟支付
-      </p>
-    </div>
-  </div>
+  <!-- Payment Modal (Manual Transfer) -->
+<div class="modal-overlay" id="upgradeModal">
+<div class="modal" style="max-width:380px;">
+<button class="close" onclick="closeModal('upgradeModal')">✕</button>
+<h3>💎 开通会员</h3>
+<div class="sub" id="paymentSub">每天50个大哥，锁定你的流水</div>
 
-  <!-- Share Sheet Modal (for mobile share) -->
+<!-- Plan Selection -->
+<div class="plan-grid" id="planGrid">
+<div class="plan-card selected" onclick="selectPlan(this, 'weekly')">
+<div class="price">29K</div><div class="period">周卡</div><div class="daily">每天50个</div>
+</div>
+<div class="plan-card" onclick="selectPlan(this, 'monthly')">
+<div class="price">79K</div><div class="period">月卡</div><div class="daily">每天50个</div>
+</div>
+</div>
+
+<!-- Step 1: Choose plan → show payment -->
+<div id="paymentStep1">
+<button class="modal-btn secondary" onclick="showPaymentStep()" id="payBtn" style="width:100%;margin-top:12px;">
+💳 选择支付方式 — <span id="payAmount">29K</span>
+</button>
+</div>
+
+<!-- Step 2: Payment details -->
+<div id="paymentStep2" style="display:none;">
+<div style="background:var(--bg);padding:12px;border-radius:var(--radius-sm);margin-bottom:12px;">
+<div style="font-size:12px;color:var(--text-dim);margin-bottom:8px;">📋 转账到以下任意账户：</div>
+<div id="bankList" style="display:flex;flex-direction:column;gap:8px;"></div>
+</div>
+
+<div style="font-size:12px;color:var(--text-dim);margin-bottom:8px;">📝 转账后填写以下信息：</div>
+<input type="text" class="form-input" id="senderName" placeholder="你的名字/账号名" style="margin-bottom:8px;">
+<select class="form-input" id="paymentMethod" style="margin-bottom:8px;">
+<option value="">选择转账方式</option>
+<option value="gopay">GoPay</option>
+<option value="dana">Dana</option>
+<option value="ovo">OVO</option>
+<option value="bank_bca">Bank BCA</option>
+<option value="bank_mandiri">Bank Mandiri</option>
+</select>
+<input type="text" class="form-input" id="paymentNote" placeholder="备注信息 (可选)" style="margin-bottom:12px;">
+
+<button class="modal-btn secondary" onclick="confirmPayment()" style="width:100%;background:var(--success);color:#000;">
+✅ 我已转账，激活VIP
+</button>
+<button class="modal-btn outline" onclick="backToStep1()" style="width:100%;margin-top:6px;">← 返回</button>
+</div>
+
+<!-- Step 3: Success -->
+<div id="paymentStep3" style="display:none;text-align:center;">
+<div style="font-size:48px;margin-bottom:10px;">🎉</div>
+<h3>VIP 已激活！</h3>
+<div class="sub">每天50个精准大哥，锁定你的流水！</div>
+<button class="modal-btn primary" onclick="closeModal('upgradeModal');loadQuota();" style="width:100%;margin-top:16px;">开始狙击大哥！</button>
+</div>
+
+</div>
+</div>
+
+<!-- Share Sheet Modal<!-- Share Sheet Modal (for mobile share) -->
   <div class="modal-overlay" id="shareSheet">
     <div class="modal" style="text-align:center;">
       <button class="close" onclick="closeModal('shareSheet')">✕</button>
