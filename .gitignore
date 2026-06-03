@@ -1,9 +1,11 @@
 node_modules/
+*.log
 .env
 .env.local
 .env.production
-*.log
-.DS_Store
 .cache/
 dist/
 tmp/
+backend/package-lock.json
+backend/temp_*.js
+backend/test_*.js
