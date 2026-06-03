@@ -89,13 +89,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 <div class="tip">💡 <span id="tipText">点赞+评论大哥视频，开播后30%概率进你直播间！</span></div>
 
 <div class="cats" id="cats">
-<button class="active" onclick="filterCat('')">全部</button>
-<button onclick="filterCat('dance')">💃 热舞</button>
-<button onclick="filterCat('beauty')">✨ 颜值</button>
-<button onclick="filterCat('singer')">🎤 唱歌</button>
-<button onclick="filterCat('comedy')">😂 搞笑</button>
-<button onclick="filterCat('gaming')">🎮 游戏</button>
-<button onclick="filterCat('talk')">💬 聊天</button>
+<button class="active" id="catBtn0" onclick="filterCat('')">全部</button>
+<button id="catBtn1" onclick="filterCat('dance')">💃 热舞</button>
+<button id="catBtn2" onclick="filterCat('beauty')">✨ 颜值</button>
+<button id="catBtn3" onclick="filterCat('singer')">🎤 唱歌</button>
+<button id="catBtn4" onclick="filterCat('comedy')">😂 搞笑</button>
+<button id="catBtn5" onclick="filterCat('gaming')">🎮 游戏</button>
+<button id="catBtn6" onclick="filterCat('talk')">💬 聊天</button>
 </div>
 
 <div class="section"><h2 id="secTitle">🎯 今日狙击目标</h2><button class="refresh" id="refreshBtn" onclick="loadWhales()">🔄</button></div>
@@ -157,6 +157,8 @@ recognition:'Pengakuan',mystery:'Misteri',challenge:'Tantangan',curiosity:'Penas
 唱歌:'Nyanyi',弹唱:'Gitar',民谣:'Folk',挑战:'Tantangan',互动:'Interaktif',讲故事:'Cerita',情感:'Emosi',电玩:'Arkade',
 所有品类:'Semua',超级VIP:'VIP',重量级:'Berat'}
 };
+var REG={zh:{'马来西亚':'马来西亚','台湾':'台湾','印度尼西亚':'印度尼西亚'},en:{'马来西亚':'Malaysia','台湾':'Taiwan','印度尼西亚':'Indonesia'},id:{'马来西亚':'Malaysia','台湾':'Taiwan','印度尼西亚':'Indonesia'}};
+function tr(region){return REG[L]?.[region]||region}
 function tt(tag){return TT[L]?.[tag]||tag}
 
 function setL(l){L=l;['zh','en','id'].forEach(function(x){var el=document.getElementById('l'+x);el.className=x===l?'active':''});applyL();if(window._targets)renderCards(window._targets)}
