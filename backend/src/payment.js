@@ -69,7 +69,7 @@ router.post('/order', async (req, res) => {
 
   // Store order
   orders.set(orderId, {
-    orderId, userId, plan, amount: planInfo.priceUSD,
+    orderId, userId, plan, amount: planInfo.price, amountUSD: planInfo.priceUSD,
     status: 'pending', createdAt: new Date().toISOString()
   });
   saveOrders();
