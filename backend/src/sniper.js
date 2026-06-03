@@ -251,7 +251,7 @@ router.get('/targets', async (req, res) => {
     
     return res.json({
       success: true,
-      version: 6,
+      version: 7,
       source: 'supabase',
       total: rawTargets.length,
       targets: scored.slice(0, count),
