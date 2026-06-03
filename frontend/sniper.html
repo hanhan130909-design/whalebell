@@ -227,7 +227,7 @@ try{
 var url=API+'/sniper/targets?lang='+L+'&limit=10';
 if(cat)url+='&category='+cat;
 if(reg)url+='&region='+encodeURIComponent(reg);
-var r=await fetch(url);var d=await r.json();
+url+='&_='+Date.now();var r=await fetch(url);var d=await r.json();
 if(d.success&&d.targets.length){window._targets=d.targets;renderCards(d.targets);
 document.getElementById('statTotal').textContent=d.total;var mx=0;for(var i=0;i<d.targets.length;i++){if(d.targets[i].level>mx)mx=d.targets[i].level}document.getElementById('statMax').textContent='LV'+mx;document.getElementById('statDone').textContent=Object.keys(sniped).length}
 }catch(e){document.getElementById('list').innerHTML='<div class=loading-page>😢 '+e.message+'</div>'}
