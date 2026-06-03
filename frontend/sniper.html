@@ -128,7 +128,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 <script>
 if(!localStorage.getItem('wb_token'))window.location.href='/index.html';
 
-var API='/api',L='zh',plan='weekly',quota={free:5,premium:false},cat='';
+var API='/api',L='zh',plan='weekly',quota={free:5,premium:false},cat='',sniped={};
 
 var T={
 zh:{badge:'🎯 化妆间狙击',timerSub:'化妆准备时间',quota:'今日剩余',unit:'个狙击名额',vip:'升级VIP',total:'目标总数',done:'已完成',free:'免费配额',max:'最高等级',tip:'点赞+评论大哥视频，开播后30%概率进你直播间！',sec:'🎯 今日狙击目标',copy:'复制话术',tt:'TikTok',locked:'🔒 已锁定',unlock:'邀请解锁',invite:'邀请+2',redeem:'兑换邀请码',all:'全部',refresh:'刷新'},
@@ -147,6 +147,7 @@ document.getElementById('tipText').textContent=t('tip');document.getElementById(
 function logout(){localStorage.clear();window.location.href='/index.html'}
 function toast(m){var d=document.createElement('div');d.className='toast';d.textContent=m;document.body.appendChild(d);setTimeout(function(){d.remove()},2000)}
 function openModalInvite(){openModal('invite')}
+function toggleSniped(id){if(sniped[id]){delete sniped[id]}else{sniped[id]=true}document.getElementById('statDone').textContent=Object.keys(sniped).length;renderCards(window._targets||[])}
 function copyText(tx){navigator.clipboard.writeText(tx).then(function(){toast('✅ '+t('copy'))})}
 
 // Category filter
@@ -191,7 +192,7 @@ var url=API+'/sniper/targets?lang='+L+'&limit=10';
 if(cat)url+='&category='+cat;
 var r=await fetch(url);var d=await r.json();
 if(d.success&&d.targets.length){window._targets=d.targets;renderCards(d.targets);
-document.getElementById('statTotal').textContent=d.total;var mx=0;for(var i=0;i<d.targets.length;i++){if(d.targets[i].level>mx)mx=d.targets[i].level}document.getElementById('statMax').textContent='LV'+mx}
+document.getElementById('statTotal').textContent=d.total;var mx=0;for(var i=0;i<d.targets.length;i++){if(d.targets[i].level>mx)mx=d.targets[i].level}document.getElementById('statMax').textContent='LV'+mx;document.getElementById('statDone').textContent=Object.keys(sniped).length}
 }catch(e){document.getElementById('list').innerHTML='<div class=loading-page>😢 '+e.message+'</div>'}
 btn.classList.remove('loading')
 }
@@ -203,10 +204,10 @@ var w=targets[i],e=em[w.level]||'⭐',locked=!quota.premium&&i>=quota.free;
 var name=w.nickname||w.username||'?',region=w.region||'',tp=w.templateType||'';
 var tags=(w.tags||[]).slice(0,3),coins=w.totalCoins||0;
 if(locked){h+='<div class="card locked"><div class="lock-overlay" onclick="openModalInvite()"><div style="font-size:32px">🔒</div><div style="font-size:14px;font-weight:700;margin:4px 0">'+t('locked')+'</div><div style="font-size:11px;color:var(--dim)">'+t('unlock')+'</div></div><div class="row"><div class="av">🔒</div><div class="info"><div class="name">'+t('locked')+'</div><div class="uname">-----</div></div></div></div>';continue}
-h+='<div class="card'+(w.isPremium?' premium':'')+'"><div class="row"><div class="av">'+e+'</div><div class="info"><div class="name">'+name+'<span class="lv">LV'+w.level+'</span></div><div class="uname">@'+w.username+'</div><div class="tags">'+tags.map(function(tg){return '<span class="tag">'+tg+'</span>'}).join('')+(w.persona?'<span class="tag persona">'+w.persona+'</span>':'')+'<span class="tag" style="background:rgba(255,215,0,0.12);color:#FFD700">'+tp+'</span></div><div class="meta"><span>📍 '+region+'</span><span>💰 '+(coins>0?(coins>=1000?(coins/1000).toFixed(1)+'K':coins):'N/A')+'</span><span>🟢 Online</span></div><div class="comment">" '+(w.comment||'').substring(0,80)+'..."</div><div class="btns"><button class="btn-copy" id="cb'+i+'">📋 '+t('copy')+'</button><a class="btn-tt" onclick="openTT(this)" data-user="'+w.username+'" href="#">📱 '+t('tt')+'</a></div></div></div></div>'
+h+='<div class="card'+(w.isPremium?' premium':'')+'"><div class="row"><div class="av">'+e+'</div><div class="info"><div class="name">'+name+'<span class="lv">LV'+w.level+'</span></div><div class="uname">@'+w.username+'</div><div class="tags">'+tags.map(function(tg){return '<span class="tag">'+tg+'</span>'}).join('')+(w.persona?'<span class="tag persona">'+w.persona+'</span>':'')+'<span class="tag" style="background:rgba(255,215,0,0.12);color:#FFD700">'+tp+'</span></div><div class="meta"><span>📍 '+region+'</span><span>💰 '+(coins>0?(coins>=1000?(coins/1000).toFixed(1)+'K':coins):'N/A')+'</span><span>🟢 Online</span></div><div class="comment">" '+(w.comment||'').substring(0,80)+'..."</div><div class="btns"><button class="btn-snipe" id="sn'+i+'" onclick="toggleSniped('+w.id+')" style="background:rgba(0,230,118,0.12);color:#00E676;border:1px solid rgba(0,230,118,0.25);padding:6px 10px;border-radius:6px;font-size:11px;cursor:pointer;min-width:60px">☑️ 已狙</button><button class="btn-copy" id="cb'+i+'">📋 '+t('copy')+'</button><a class="btn-tt" onclick="openTT(this)" data-user="'+w.username+'" href="#">📱 '+t('tt')+'</a></div></div></div></div>'
 }
 document.getElementById('list').innerHTML=h||'<div class=loading-page>😢 '+t('nodata')+'</div>';
-for(var j=0;j<targets.length;j++){(function(idx,t){var btn=document.getElementById('cb'+idx);if(btn)btn.onclick=function(){copyText(t.comment||'')}})(j,targets[j])}
+for(var j=0;j<targets.length;j++){(function(idx,t){var btn=document.getElementById('cb'+idx);if(btn)btn.onclick=function(){copyText(t.comment||'')};var sn=document.getElementById('sn'+idx);if(sn){if(sniped[t.id]){sn.textContent='✅ 已狙击';sn.style.background='rgba(0,230,118,0.3)'}else{sn.textContent='☑️ 已狙';sn.style.background='rgba(0,230,118,0.12)'}}})(j,targets[j])}
 }
 
 function openTT(el){var u=el.getAttribute('data-user');window.open('tiktok://user/'+u,'_self');setTimeout(function(){window.open('https://www.tiktok.com/@'+u,'_blank')},800)}
