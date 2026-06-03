@@ -40,6 +40,16 @@ function saveOrders() {
 /**
  * GET /api/pay/config
  */
+router.get('/debug-env', (req, res) => {
+  res.json({
+    PAY_GOPAY: process.env.PAY_GOPAY || 'NOT SET',
+    PAY_BCA: process.env.PAY_BCA || 'NOT SET',
+    PAY_HOLDER: process.env.PAY_HOLDER || 'NOT SET',
+    PORT: process.env.PORT || 'NOT SET',
+    NODE_ENV: process.env.NODE_ENV || 'NOT SET'
+  });
+});
+
 router.get('/config', (req, res) => {
   const mode = LEMON_API_KEY ? 'lemon' : 'manual';
   res.json({
