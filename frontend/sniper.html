@@ -136,6 +136,29 @@ en:{badge:'🎯 Vanity Sniper',timerSub:'Prep time',quota:'Remaining',unit:'targ
 id:{badge:'🎯 Sniper Dandan',timerSub:'Waktu dandan',quota:'Sisa',unit:'target',vip:'VIP',total:'Total',done:'Selesai',free:'Gratis',max:'LV Max',tip:'Like+komen, 30% mampir!',sec:'🎯 Target Hari Ini',copy:'Salin',tt:'TikTok',locked:'🔒 Terkunci',unlock:'Buka',invite:'Ajak +2',redeem:'Kode',all:'Semua',refresh:'Segar'}
 };
 function t(k){return T[L][k]||T.en[k]||k}
+
+var TT={
+zh:{high_level:'高等级',gamer:'游戏玩家',often_gifter:'高频送礼',night_owl:'夜猫子',beauty_dancer:'颜值主播',
+recognition:'认可型',mystery:'神秘型',challenge:'挑战型',curiosity:'好奇型',
+热舞:'热舞',颜值:'颜值',大方:'大方',搞笑:'搞笑',脱口秀:'脱口秀',夜生活:'夜生活',竞技:'竞技',
+游戏:'游戏',车:'车',音乐:'音乐',乐器:'乐器',文艺:'文艺',美食:'美食',旅行:'旅行',生活:'生活',
+唱歌:'唱歌',弹唱:'弹唱',民谣:'民谣',挑战:'挑战',互动:'互动',讲故事:'讲故事',情感:'情感',电玩:'电玩',
+所有品类:'所有',超级VIP:'超级VIP',重量级:'重量级'},
+en:{high_level:'High LV',gamer:'Gamer',often_gifter:'Big Spender',night_owl:'Night Owl',beauty_dancer:'Beauty',
+recognition:'Recognition',mystery:'Mystery',challenge:'Challenge',curiosity:'Curiosity',
+热舞:'Dance',颜值:'Beauty',大方:'Generous',搞笑:'Funny',脱口秀:'Talk Show',夜生活:'Nightlife',竞技:'Esports',
+游戏:'Games',车:'Cars',音乐:'Music',乐器:'Instruments',文艺:'Artsy',美食:'Food',旅行:'Travel',生活:'Lifestyle',
+唱歌:'Singing',弹唱:'Guitar',民谣:'Folk',挑战:'Challenge',互动:'Interactive',讲故事:'Story',情感:'Emotion',电玩:'Arcade',
+所有品类:'All',超级VIP:'Super VIP',重量级:'Heavy'},
+id:{high_level:'Level Tinggi',gamer:'Gamer',often_gifter:'Sering Gift',night_owl:'Aktif Malam',beauty_dancer:'Cantik',
+recognition:'Pengakuan',mystery:'Misteri',challenge:'Tantangan',curiosity:'Penasaran',
+热舞:'Dansa',颜值:'Cantik',大方:'Dermawan',搞笑:'Lucu',脱口秀:'Talkshow',夜生活:'Malam',竞技:'Esports',
+游戏:'Game',车:'Mobil',音乐:'Musik',乐器:'Alat Musik',文艺:'Seni',美食:'Makanan',旅行:'Travel',生活:'Hidup',
+唱歌:'Nyanyi',弹唱:'Gitar',民谣:'Folk',挑战:'Tantangan',互动:'Interaktif',讲故事:'Cerita',情感:'Emosi',电玩:'Arkade',
+所有品类:'Semua',超级VIP:'VIP',重量级:'Berat'}
+};
+function tt(tag){return TT[L]?.[tag]||tag}
+
 function setL(l){L=l;['zh','en','id'].forEach(function(x){var el=document.getElementById('l'+x);el.className=x===l?'active':''});applyL();if(window._targets)renderCards(window._targets)}
 function applyL(){
 document.getElementById('badge').textContent=t('badge');document.getElementById('timerSub').textContent=t('timerSub');
@@ -204,7 +227,7 @@ var w=targets[i],e=em[w.level]||'⭐',locked=!quota.premium&&i>=quota.free;
 var name=w.nickname||w.username||'?',region=w.region||'',tp=w.templateType||'';
 var tags=(w.tags||[]).slice(0,3),coins=w.totalCoins||0;
 if(locked){h+='<div class="card locked"><div class="lock-overlay" onclick="openModalInvite()"><div style="font-size:32px">🔒</div><div style="font-size:14px;font-weight:700;margin:4px 0">'+t('locked')+'</div><div style="font-size:11px;color:var(--dim)">'+t('unlock')+'</div></div><div class="row"><div class="av">🔒</div><div class="info"><div class="name">'+t('locked')+'</div><div class="uname">-----</div></div></div></div>';continue}
-h+='<div class="card'+(w.isPremium?' premium':'')+'"><div class="row"><div class="av">'+e+'</div><div class="info"><div class="name">'+name+'<span class="lv">LV'+w.level+'</span></div><div class="uname">@'+w.username+'</div><div class="tags">'+tags.map(function(tg){return '<span class="tag">'+tg+'</span>'}).join('')+(w.persona?'<span class="tag persona">'+w.persona+'</span>':'')+'<span class="tag" style="background:rgba(255,215,0,0.12);color:#FFD700">'+tp+'</span></div><div class="meta"><span>📍 '+region+'</span><span>💰 '+(coins>0?(coins>=1000?(coins/1000).toFixed(1)+'K':coins):'N/A')+'</span><span>🟢 Online</span></div><div class="comment">" '+(w.comment||'').substring(0,80)+'..."</div><div class="btns"><button class="btn-snipe" id="sn'+i+'" onclick="toggleSniped('+w.id+')" style="background:rgba(0,230,118,0.12);color:#00E676;border:1px solid rgba(0,230,118,0.25);padding:6px 10px;border-radius:6px;font-size:11px;cursor:pointer;min-width:60px">☑️ 已狙</button><button class="btn-copy" id="cb'+i+'">📋 '+t('copy')+'</button><a class="btn-tt" onclick="openTT(this)" data-user="'+w.username+'" href="#">📱 '+t('tt')+'</a></div></div></div></div>'
+h+='<div class="card'+(w.isPremium?' premium':'')+'"><div class="row"><div class="av">'+e+'</div><div class="info"><div class="name">'+name+'<span class="lv">LV'+w.level+'</span></div><div class="uname">@'+w.username+'</div><div class="tags">'+tags.map(function(tg){return '<span class="tag">'+tt(tg)+'</span>'}).join('')+(w.persona?'<span class="tag persona">'+tt(w.persona)+'</span>':'')+'<span class="tag" style="background:rgba(255,215,0,0.12);color:#FFD700">'+tp+'</span></div><div class="meta"><span>📍 '+region+'</span><span>💰 '+(coins>0?(coins>=1000?(coins/1000).toFixed(1)+'K':coins):'N/A')+'</span><span>🟢 Online</span></div><div class="comment">" '+(w.comment||'').substring(0,80)+'..."</div><div class="btns"><button class="btn-snipe" id="sn'+i+'" onclick="toggleSniped('+w.id+')" style="background:rgba(0,230,118,0.12);color:#00E676;border:1px solid rgba(0,230,118,0.25);padding:6px 10px;border-radius:6px;font-size:11px;cursor:pointer;min-width:60px">☑️ 已狙</button><button class="btn-copy" id="cb'+i+'">📋 '+t('copy')+'</button><a class="btn-tt" onclick="openTT(this)" data-user="'+w.username+'" href="#">📱 '+t('tt')+'</a></div></div></div></div>'
 }
 document.getElementById('list').innerHTML=h||'<div class=loading-page>😢 '+t('nodata')+'</div>';
 for(var j=0;j<targets.length;j++){(function(idx,t){var btn=document.getElementById('cb'+idx);if(btn)btn.onclick=function(){copyText(t.comment||'')};var sn=document.getElementById('sn'+idx);if(sn){if(sniped[t.id]){sn.textContent='✅ 已狙击';sn.style.background='rgba(0,230,118,0.3)'}else{sn.textContent='☑️ 已狙';sn.style.background='rgba(0,230,118,0.12)'}}})(j,targets[j])}
