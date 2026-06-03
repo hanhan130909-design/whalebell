@@ -3,6 +3,7 @@
  * Supabase (PostgreSQL) 数据库操作
  */
 const { createClient } = require('@supabase/supabase-js');
+const ws = require('ws');
 require('dotenv').config();
 
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -15,14 +16,14 @@ let supabase = null;
 let supabaseAnon = null;
 
 if (supabaseUrl && supabaseKey) {
-  supabase = createClient(supabaseUrl, supabaseKey);
+  supabase = createClient(supabaseUrl, supabaseKey, { realtime: { transport: ws } });
   console.log('✅ Supabase connected:', supabaseUrl.split('/').pop());
 } else {
   console.warn('⚠️  Supabase not configured — using in-memory fallback');
 }
 
 if (supabaseUrl && anonKey) {
-  supabaseAnon = createClient(supabaseUrl, anonKey);
+  supabaseAnon = createClient(supabaseUrl, anonKey, { realtime: { transport: ws } });
 }
 
 // ============================================================
