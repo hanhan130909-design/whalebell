@@ -175,7 +175,7 @@ try {
   supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY);
 } catch(e) { console.error('Supabase init error:', e.message); }
 
-async function getWhalesFromSupabase(limit = 10, category = null) {
+async function getWhalesFromSupabase(limit = 10, category = null, region = null) {
   if (!supabase) return null;
   try {
     // Simple query, no contains() filter (encoding issues with CJK characters)
@@ -241,7 +241,8 @@ router.get('/targets', async (req, res) => {
   const language = lang || 'id';
 
   // Try Supabase first
-  let rawTargets = await getWhalesFromSupabase(count, category);
+  let var filterRegion = req.query.region || null;
+  rawTargets = await getWhalesFromSupabase(count, category, filterRegion);
   
   // Fallback to mock
   if (!rawTargets || rawTargets.length === 0) {
