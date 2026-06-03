@@ -221,6 +221,34 @@ function shareInvite(){var code=window._inviteCode||'------';var text='🔥 用�
 function doRedeem(){var code=document.getElementById('redeemInput').value.trim().toUpperCase();if(!code||code.length<4)return toast('请输入邀请码');fetch(API+'/dist/referral/redeem',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:'u_'+Date.now(),code:code})}).then(function(r){return r.json()}).then(function(d){if(d.success){toast('✅ +2名额');closeModal('redeem');loadQuota()}else{toast('❌ '+(d.error||'失败'))}}).catch(function(){toast('❌ 网络错误')})}
 
 // Load whales
+
+// Daily whale rotation tracker
+function getShownToday() {
+  try {
+    var data = JSON.parse(localStorage.getItem('wb_shown') || '{}');
+    var today = new Date().toDateString();
+    if (data.date !== today) return { date: today, ids: [] };
+    return data;
+  } catch(e) { return { date: new Date().toDateString(), ids: [] }; }
+}
+function markShown(ids) {
+  var data = getShownToday();
+  for (var i = 0; i < ids.length; i++) {
+    if (data.ids.indexOf(ids[i]) < 0) data.ids.push(ids[i]);
+  }
+  localStorage.setItem('wb_shown', JSON.stringify(data));
+}
+function filterShown(targets) {
+  var shown = getShownToday().ids;
+  var fresh = targets.filter(function(t) { return shown.indexOf(t.id) < 0; });
+  // If less than 5 fresh, reset and show all
+  if (fresh.length < 5) {
+    localStorage.setItem('wb_shown', JSON.stringify({ date: new Date().toDateString(), ids: [] }));
+    return targets;
+  }
+  return fresh;
+}
+
 async function loadWhales(){
 var btn=document.getElementById('refreshBtn');btn.classList.add('loading');
 try{
@@ -228,8 +256,8 @@ var url=API+'/sniper/targets?lang='+L+'&limit=10';
 if(cat)url+='&category='+cat;
 if(reg)url+='&region='+encodeURIComponent(reg);
 url+='&_='+Date.now();var r=await fetch(url);var d=await r.json();
-if(d.success&&d.targets.length){window._targets=d.targets;renderCards(d.targets);
-document.getElementById('statTotal').textContent=d.total;var mx=0;for(var i=0;i<d.targets.length;i++){if(d.targets[i].level>mx)mx=d.targets[i].level}document.getElementById('statMax').textContent='LV'+mx;document.getElementById('statDone').textContent=Object.keys(sniped).length}
+if(d.success&&d.targets.length){var fresh=filterShown(d.targets);window._targets=fresh;renderCards(fresh);markShown(fresh.map(function(t){return t.id}));
+document.getElementById('statTotal').textContent=fresh.length;var mx=0;for(var i=0;i<d.targets.length;i++){if(d.targets[i].level>mx)mx=d.targets[i].level}document.getElementById('statMax').textContent='LV'+mx;document.getElementById('statDone').textContent=Object.keys(sniped).length}
 }catch(e){document.getElementById('list').innerHTML='<div class=loading-page>😢 '+e.message+'</div>'}
 btn.classList.remove('loading')
 }
