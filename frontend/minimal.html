@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WhaleBell 🐋</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Arial,sans-serif;background:#0A0A1A;color:#fff;padding:16px}
+h1{font-size:24px;margin-bottom:16px;background:linear-gradient(135deg,#FF6B9D,#FFD700);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.card{background:#16162A;border-radius:12px;padding:12px;margin-bottom:10px;border:1px solid #2A2A45;display:flex;align-items:center;gap:10px}
+.avatar{font-size:28px}
+.info{flex:1}
+.name{font-weight:700;font-size:16px}
+.meta{font-size:12px;color:#8E8EA0}
+.level{display:inline-block;background:linear-gradient(135deg,#FDCB6E,#E17055);color:#000;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:700;margin-left:6px}
+.comment{font-size:12px;color:#aaa;margin-top:4px;font-style:italic}
+.copy-btn{background:#FF6B9D22;color:#FF6B9D;border:1px solid #FF6B9D44;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer}
+.tiktok-btn{background:#FF6B9D;color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;text-decoration:none;display:inline-block;margin-left:4px}
+.loading{text-align:center;padding:40px;color:#8E8EA0}
+</style>
+</head>
+<body>
+<h1>🐋 WhaleBell</h1>
+<div id="list"><div class="loading">⏳ 正在扫描大哥...</div></div>
+
+<script>
+var API = '/api';
+
+async function load() {
+  try {
+    var res = await fetch(API + '/sniper/targets?lang=zh');
+    var data = await res.json();
+    console.log('API:', data.total, 'whales');
+    
+    if (data.success && data.targets.length) {
+      var html = '';
+      for (var i = 0; i < data.targets.length; i++) {
+        var t = data.targets[i];
+        var emoji = t.level >= 45 ? '💎' : t.level >= 35 ? '🦁' : '⭐';
+        html += '<div class="card">' +
+          '<div class="avatar">' + emoji + '</div>' +
+          '<div class="info">' +
+            '<div class="name">' + (t.nickname || t.username) + '<span class="level">LV' + t.level + '</span></div>' +
+            '<div class="meta">@' + t.username + ' | ' + (t.region || 'N/A') + ' | ' + (t.templateType || '') + '</div>' +
+            '<div class="comment">" ' + (t.comment || '').substring(0,80) + '..."</div>' +
+            '<div style="margin-top:8px">' +
+              '<button class="copy-btn" onclick="copyText('' + (t.comment || '').replace(/'/g, "\'") + '')">📋 复制话术</button>' +
+              '<a class="tiktok-btn" href="https://www.tiktok.com/@' + t.username + '" target="_blank">🔗 TikTok</a>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      }
+      document.getElementById('list').innerHTML = html;
+    } else {
+      document.getElementById('list').innerHTML = '<div class="loading">😢 暂无大哥数据</div>';
+    }
+  } catch(e) {
+    document.getElementById('list').innerHTML = '<div class="loading">❌ ' + e.message + '</div>';
+  }
+}
+
+function copyText(text) {
+  navigator.clipboard.writeText(text).then(function() { alert('✅ 已复制'); });
+}
+
+load();
+</script>
+</body>
+</html>
