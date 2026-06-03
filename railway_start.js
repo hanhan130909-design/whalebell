@@ -35,6 +35,6 @@ app.get('/', (req, res) => res.redirect('/sniper.html'));
 process.on('uncaughtException', (e) => console.error('FATAL:', e.message, e.stack));
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log('🐋 Step5 on 0.0.0.0:' + PORT);
+  console.log('🐋 Step5 (Node22) on 0.0.0.0:' + PORT);
   console.log('Routes: /api, /api/sniper, /api/dist');
 });
