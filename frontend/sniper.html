@@ -91,15 +91,18 @@ function loadAccts(){fetch(API+'/pay/config').then(function(r){return r.json()})
 async function submitPay(){var n=document.getElementById('payName').value,m=document.getElementById('payMethod').value;if(!n)return toast('请输入名字');if(!m)return toast('请选择转账方式');try{var o=await(await fetch(API+'/pay/order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:'u_'+Date.now(),plan:plan})})).json();await(await fetch(API+'/pay/upload',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({orderId:o.orderId,paymentMethod:m,senderName:n})})).json();document.getElementById('payStep2').style.display='none';document.getElementById('payStep3').style.display='block';quota.premium=true;quota.free=999;if(window._targets)renderCards(window._targets);try{await fetch(API+'/dist/premium/mock',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:'u_'+Date.now(),plan:plan})})}catch(e){}}catch(e){toast('网络错误')}}
 
 function renderCards(targets){
-  var h='';var em={50:'👑',49:'💎',48:'💎',47:'💎',46:'🦁',45:'🦁',44:'🦁',43:'🦁',42:'🐯',41:'🐯',40:'🐯'};
-  for(var i=0;i<targets.length;i++){
-    var t=targets[i];var e=em[t.level]||'⭐';
-    var locked=!quota.premium&&i>=quota.free;
-    if(locked){h+='<div class=card style=opacity:0.4><div class=av>🔒</div><div class=info><div class=name>'+t('locked')+'</div><div class=meta>'+t('unlock')+' — 邀请好友或升级VIP</div></div></div>';continue}
-    h+='<div class=card><div class=av>'+e+'</div><div class=info><div class=name>'+t.nickname+'<span class=lv>LV'+t.level+'</span></div><div class=meta>@'+t.username+' | '+(t.region||'')+' | '+t.templateType+'</div><div class=comment>\" '+t.comment.substring(0,70)+'...\"</div><div class=btns><button class=btn-copy id=cb'+i+'>📋 '+t('copy')+'</button><a class=btn-tt href=https://www.tiktok.com/@'+t.username+' target=_blank>🔗 '+t('tt')+'</a></div></div></div>';
-  }
-  document.getElementById('list').innerHTML=h||'<div class=loading>😢 暂无数据</div>';
-  for(var j=0;j<targets.length;j++){(function(idx,t){var btn=document.getElementById('cb'+idx);if(btn)btn.onclick=function(){copyText(t.comment)}})(j,targets[j])}
+  try{
+    var h='';var em={50:'👑',49:'💎',48:'💎',47:'💎',46:'🦁',45:'🦁',44:'🦁',43:'🦁',42:'🐯',41:'🐯',40:'🐯'};
+    for(var i=0;i<targets.length;i++){
+      var t=targets[i];var e=em[t.level]||'⭐';var name=t.nickname||t.username||'?';
+      var region=t.region||'';var tt=t.templateType||'';var comment=t.comment||'';
+      var locked=!quota.premium&&i>=quota.free;
+      if(locked){h+='<div class=card style=opacity:0.4><div class=av>🔒</div><div class=info><div class=name>'+t('locked')+'</div><div class=meta>'+t('unlock')+' - 邀请好友升级VIP解锁</div></div></div>';continue}
+      h+='<div class=card><div class=av>'+e+'</div><div class=info><div class=name>'+name+'<span class=lv>LV'+t.level+'</span></div><div class=meta>@'+t.username+' | '+region+' | '+tt+'</div><div class=comment>" '+comment.substring(0,70)+'..."</div><div class=btns><button class=btn-copy id=cb'+i+'>📋 '+t('copy')+'</button><a class=btn-tt href=https://www.tiktok.com/@'+t.username+' target=_blank>🔗 '+t('tt')+'</a></div></div></div>';
+    }
+    document.getElementById('list').innerHTML=h||'<div class=loading>😢 暂无数据</div>';
+    for(var j=0;j<targets.length;j++){(function(idx,t){var btn=document.getElementById('cb'+idx);if(btn)btn.onclick=function(){copyText(t.comment||'')}})(j,targets[j])}
+  }catch(e){document.getElementById('list').innerHTML='<div class=loading>❌ '+e.message+'</div>'}
 }
 
 async function loadWhales(){
