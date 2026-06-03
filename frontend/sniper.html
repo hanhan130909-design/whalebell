@@ -124,7 +124,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 <div class="modal-overlay" id="inviteModal"><div class="modal">
 <button class="close" onclick="closeModal('invite')">✕</button><h3>👯 邀请姐妹解锁</h3><div class="sub">邀请1人各+2名额，邀请2人解锁全部VIP大哥</div>
 <div style="background:var(--bg);padding:14px;border-radius:8px;text-align:center;margin-bottom:12px"><div style="font-size:11px;color:var(--dim)">你的邀请码</div><div style="font-size:28px;font-weight:800;letter-spacing:4px;color:var(--pink)" id="inviteCode">------</div></div>
-<button class="btn btn-pink" onclick="shareInvite()">📤 复制邀请链接发给姐妹</button></div></div>
+<button class="btn btn-pink" onclick="shareInvite()">📤 复制邀请链接发给姐妹</button><button class="btn" style="width:100%;padding:10px;border-radius:8px;font-size:13px;cursor:pointer;margin-top:6px;background:var(--bg);color:var(--dim);border:1px solid var(--border)" onclick="closeModal('invite');openModal('how')">📖 查看分销说明</button></div></div>
 
 <!-- Redeem Modal -->
 <div class="modal-overlay" id="redeemModal"><div class="modal">
@@ -138,9 +138,9 @@ if(!localStorage.getItem('wb_token'))window.location.href='/index.html';
 var API='/api',L='zh',plan='weekly',quota={free:5,premium:false},cat='',reg='',sniped={};
 
 var T={
-zh:{badge:'🎯 化妆间狙击',timerSub:'化妆准备时间',quota:'今日剩余',unit:'个狙击名额',vip:'升级VIP',total:'目标总数',done:'已完成',free:'免费配额',max:'最高等级',tip:'点赞+评论大哥视频，开播后30%概率进你直播间！',sec:'🎯 今日狙击目标',copy:'复制话术',tt:'TikTok',locked:'🔒 已锁定',unlock:'邀请解锁',invite:'邀请+2',redeem:'兑换邀请码',all:'全部',refresh:'刷新'},
-en:{badge:'🎯 Vanity Sniper',timerSub:'Prep time',quota:'Remaining',unit:'targets',vip:'VIP',total:'Total',done:'Done',free:'Free',max:'Max LV',tip:'Like+comment, 30% chance they visit!',sec:"🎯 Today's Targets",copy:'Copy',tt:'TikTok',locked:'🔒 Locked',unlock:'Unlock',invite:'Invite +2',redeem:'Redeem',all:'All',refresh:'Refresh'},
-id:{badge:'🎯 Sniper Dandan',timerSub:'Waktu dandan',quota:'Sisa',unit:'target',vip:'VIP',total:'Total',done:'Selesai',free:'Gratis',max:'LV Max',tip:'Like+komen, 30% mampir!',sec:'🎯 Target Hari Ini',copy:'Salin',tt:'TikTok',locked:'🔒 Terkunci',unlock:'Buka',invite:'Ajak +2',redeem:'Kode',all:'Semua',refresh:'Segar'}
+zh:{badge:'🎯 化妆间狙击',howTitle:'分销说明',howSub:'邀请姐妹一起用，躺着赚钱',howL1:'🔗 直推 L1 — 40%',howL1Desc:'你直接邀请的主播买 VIP → 你拿走 40%。月卡 79K → 你赚 31,600 IDR',howL2:'🔗 间推 L2 — 10%',howL2Desc:'你邀请的人又邀请了别人 → 那人买 VIP → 你拿 10%',howGroup:'👯 姐妹拼团',howGroupDesc:'3 人成团 → 全员解锁 VIP 大哥。团长额外 +5,000 IDR',howQuota:'每邀请 1 人，双方各得 +2 大哥名额',howBtn:'知道了',timerSub:'化妆准备时间',quota:'今日剩余',unit:'个狙击名额',vip:'升级VIP',total:'目标总数',done:'已完成',free:'免费配额',max:'最高等级',tip:'点赞+评论大哥视频，开播后30%概率进你直播间！',sec:'🎯 今日狙击目标',copy:'复制话术',tt:'TikTok',locked:'🔒 已锁定',unlock:'邀请解锁',invite:'邀请+2',redeem:'兑换邀请码',all:'全部',refresh:'刷新'},
+en:{badge:'🎯 Vanity Sniper',howTitle:'Distribution',howSub:'Invite friends, earn passive income',howL1:'🔗 Direct L1 — 40%',howL1Desc:'Your direct referral buys VIP -> you earn 40%. Monthly 79K -> you get 31,600 IDR',howL2:'🔗 Indirect L2 — 10%',howL2Desc:'Your referrals referral buys VIP -> you earn 10%',howGroup:'👯 Group Buy',howGroupDesc:'3-person group -> everyone unlocks VIP. Leader bonus +5,000 IDR',howQuota:'Each invite: both get +2 whale targets',howBtn:'Got it!',timerSub:'Prep time',quota:'Remaining',unit:'targets',vip:'VIP',total:'Total',done:'Done',free:'Free',max:'Max LV',tip:'Like+comment, 30% chance they visit!',sec:"🎯 Today's Targets",copy:'Copy',tt:'TikTok',locked:'🔒 Locked',unlock:'Unlock',invite:'Invite +2',redeem:'Redeem',all:'All',refresh:'Refresh'},
+id:{badge:'🎯 Sniper Dandan',howTitle:'Cara Distribusi',howSub:'Ajak teman, dapat passive income',howL1:'🔗 Langsung L1 — 40%',howL1Desc:'Teman langsung kamu beli VIP -> kamu dapat 40%. Bulanan 79K -> kamu dapat 31,600 IDR',howL2:'🔗 Tidak Langsung L2 — 10%',howL2Desc:'Temannya teman kamu beli VIP -> kamu tetap dapat 10%',howGroup:'👯 Patungan',howGroupDesc:'3 orang patungan -> semua buka VIP. Leader bonus +5,000 IDR',howQuota:'Setiap undangan: berdua dapat +2 target bos',howBtn:'OK!',timerSub:'Waktu dandan',quota:'Sisa',unit:'target',vip:'VIP',total:'Total',done:'Selesai',free:'Gratis',max:'LV Max',tip:'Like+komen, 30% mampir!',sec:'🎯 Target Hari Ini',copy:'Salin',tt:'TikTok',locked:'🔒 Terkunci',unlock:'Buka',invite:'Ajak +2',redeem:'Kode',all:'Semua',refresh:'Segar'}
 };
 function t(k){return T[L][k]||T.en[k]||k}
 
@@ -172,7 +172,7 @@ function setL(l){L=l;['zh','en','id'].forEach(function(x){var el=document.getEle
 function applyL(){
 document.getElementById('badge').textContent=t('badge');document.getElementById('timerSub').textContent=t('timerSub');
 document.getElementById('quotaLabel').textContent='🎯 '+t('quota');document.getElementById('quotaUnit').textContent=t('unit');document.getElementById('vipBtn').textContent=t('vip');
-document.getElementById('lblTotal').textContent=t('total');document.getElementById('lblDone').textContent=t('done');document.getElementById('lblFree').textContent=t('free');document.getElementById('lblMax').textContent=t('max');
+document.getElementById('lblTotal').textContent=t('total');document.getElementById('lblDone').textContent=t('done');document.getElementById('lblFree').textContent=t('free');document.getElementById('lblMax').textContent=t('max');document.getElementById('howTitle').textContent=t('howTitle');document.getElementById('howSub').textContent=t('howSub');document.getElementById('howL1').textContent=t('howL1');document.getElementById('howL1Desc').textContent=t('howL1Desc');document.getElementById('howL2').textContent=t('howL2');document.getElementById('howL2Desc').textContent=t('howL2Desc');document.getElementById('howGroup').textContent=t('howGroup');document.getElementById('howGroupDesc').textContent=t('howGroupDesc');document.getElementById('howQuota').textContent=t('howQuota');document.getElementById('howBtn').textContent=t('howBtn');
 document.getElementById('tipText').textContent=t('tip');document.getElementById('secTitle').textContent=t('sec');updateCats();
 }
 
@@ -255,4 +255,30 @@ var sec=1800;setInterval(function(){if(sec>0)sec--;var m=Math.floor(sec/60),s=se
 
 applyL();loadWhales();loadQuota();
 </script>
+
+<!-- How it Works Modal -->
+<div class="modal-overlay" id="howModal"><div class="modal" style="max-width:360px;max-height:80vh;overflow-y:auto">
+<button class="close" onclick="closeModal('how')">✕</button>
+<h3>💰 <span id="howTitle">分销说明</span></h3>
+<div class="sub" id="howSub">邀请姐妹一起用，你躺着赚钱</div>
+<div style="font-size:12px;line-height:1.7;color:var(--dim)">
+<div style="background:var(--bg);border-radius:8px;padding:10px;margin-bottom:10px">
+<div style="color:var(--gold);font-weight:700;margin-bottom:4px" id="howL1">🔗 直推 L1 — 40% 佣金</div>
+<div id="howL1Desc">你直接邀请的主播买 VIP → 你拿走 40%。月卡 79K → 你赚 31,600 IDR</div>
+</div>
+<div style="background:var(--bg);border-radius:8px;padding:10px;margin-bottom:10px">
+<div style="color:var(--purple);font-weight:700;margin-bottom:4px" id="howL2">🔗 间推 L2 — 10% 佣金</div>
+<div id="howL2Desc">你邀请的人又邀请了别人 → 那人买 VIP → 你拿 10%</div>
+</div>
+<div style="background:var(--bg);border-radius:8px;padding:10px;margin-bottom:10px">
+<div style="color:#00E676;font-weight:700;margin-bottom:4px" id="howGroup">👯 姐妹拼团</div>
+<div id="howGroupDesc">3 人成团 → 全员解锁 VIP 大哥。团长额外 +5,000 IDR</div>
+</div>
+<div style="text-align:center;margin-top:8px">
+<div style="font-size:28px;font-weight:800;color:var(--gold)">+2</div>
+<div style="font-size:11px;color:var(--dim)" id="howQuota">每邀请 1 人，双方各得 +2 大哥名额</div>
+</div>
+</div>
+<button class="btn btn-pink" onclick="closeModal('how')" style="width:100%;margin-top:12px" id="howBtn">知道了</button>
+</div></div>
 </body></html>
