@@ -14,11 +14,14 @@ router.get('/', async (req, res) => {
   
   try {
     const limit = parseInt(req.query.limit) || 10;
-    const url = SUPABASE_URL + '/rest/v1/whale_profiles?select=*&order=level.desc&limit=' + limit;
+    const params = new URLSearchParams({ select: '*', order: 'level.desc', limit: String(limit) });
+    const url = SUPABASE_URL + '/rest/v1/whale_profiles?' + params.toString();
     const response = await fetch(url, {
       headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + SUPABASE_KEY }
     });
-    const data = await response.json();
+    const text = await response.text();
+    let data;
+    try { data = JSON.parse(text); } catch(e) { return res.json({ error: 'JSON parse: ' + text.substring(0,200), source: 'supabase' }); }
     
     if (!Array.isArray(data)) {
       return res.json({ error: 'Invalid response', source: 'supabase' });
