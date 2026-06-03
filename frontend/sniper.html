@@ -44,7 +44,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0A0A1A;
 .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#FF6B9D;color:#fff;padding:8px 20px;border-radius:20px;font-size:13px;z-index:200}
 </style></head>
 <body>
-<div class="header"><h1>🐋 WhaleBell</h1>
+<div class="header"><div style="display:flex;justify-content:space-between;align-items:center"><h1 style="margin:0">🐋 WhaleBell</h1><button onclick="logout()" style="background:rgba(255,255,255,0.1);border:none;color:#fff;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer">退出</button></div>
 <div style="display:flex;gap:4px;justify-content:center;margin:6px 0"><button onclick="setLang('zh')" id="btnZH" style="background:rgba(255,107,157,0.8);border:none;color:#fff;padding:2px 10px;border-radius:6px;font-size:10px;cursor:pointer">中文</button><button onclick="setLang('en')" id="btnEN" style="background:none;border:1px solid rgba(255,255,255,0.3);color:rgba(255,255,255,0.6);padding:2px 10px;border-radius:6px;font-size:10px;cursor:pointer">EN</button><button onclick="setLang('id')" id="btnID" style="background:none;border:1px solid rgba(255,255,255,0.3);color:rgba(255,255,255,0.6);padding:2px 10px;border-radius:6px;font-size:10px;cursor:pointer">ID</button></div><div class="badge">🎯 化妆间狙击</div><div class="timer" id="timer">30:00</div><div style="font-size:12px;color:#8E8EA0">化妆准备时间</div></div>
 <div class="quota"><span>🎯 今日剩余 <b id="quotaNum">5</b> 个名额</span><button class="btn" onclick="openPay()">💎 升级VIP</button></div>
 <div class="tip">💡 点赞+评论大哥视频，开播后<strong>30%概率</strong>进你直播间</div>
@@ -62,7 +62,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0A0A1A;
 <div id="payStep3" style="display:none;text-align:center"><div style="font-size:40px">🎉</div><h3>VIP激活成功!</h3><button class="btn btn-primary" onclick="closePay()">开始狙击!</button></div></div></div>
 
 <script>
-var API='/api', plan='weekly', lang='zh', quota={free:5,total:5,premium:false};
+
+// Auth guard - redirect to login if no token
+var AUTH_TOKEN = localStorage.getItem('wb_token');
+var AUTH_USER = JSON.parse(localStorage.getItem('wb_user')||'null');
+if (!AUTH_TOKEN) { window.location.href = '/index.html'; }
+var API = '/api';
+, plan='weekly', lang='zh', quota={free:5,total:5,premium:false};
 
 // i18n
 var T = {
@@ -88,6 +94,8 @@ function showPayStep2(){document.getElementById('payStep1').style.display='none'
 function toast(m){var d=document.createElement('div');d.className='toast';d.textContent=m;document.body.appendChild(d);setTimeout(function(){d.remove()},2000)}
 function copyText(t){navigator.clipboard.writeText(t).then(function(){toast('✅ 已复制')})}
 function loadAccts(){fetch(API+'/pay/config').then(function(r){return r.json()}).then(function(d){var el=document.getElementById('accts');el.innerHTML='';if(d.accounts){var ks=Object.keys(d.accounts);for(var i=0;i<ks.length;i++){var a=d.accounts[ks[i]];var div=document.createElement('div');div.style.cssText='padding:6px 0;border-bottom:1px solid #2A2A45;display:flex;justify-content:space-between';div.innerHTML='<span>'+a.icon+' '+a.name+': '+a.number+'</span><span style=color:#FF6B9D;cursor:pointer>📋</span>';div.querySelector('span:last-child').onclick=(function(num){return function(){copyText(num)}})(a.number);el.appendChild(div)}}else{el.innerHTML='暂无收款账户'}}).catch(function(){})}
+async function logout(){localStorage.clear();window.location.href='/index.html'}
+function authFetch(url,opts){opts=opts||{};opts.headers=opts.headers||{};opts.headers['Authorization']='Bearer '+AUTH_TOKEN;opts.headers['x-user-id']=AUTH_USER?AUTH_USER.id:'';return fetch(url,opts)}
 async function submitPay(){var n=document.getElementById('payName').value,m=document.getElementById('payMethod').value;if(!n)return toast('请输入名字');if(!m)return toast('请选择转账方式');try{var o=await(await fetch(API+'/pay/order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:'u_'+Date.now(),plan:plan})})).json();await(await fetch(API+'/pay/upload',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({orderId:o.orderId,paymentMethod:m,senderName:n})})).json();document.getElementById('payStep2').style.display='none';document.getElementById('payStep3').style.display='block';quota.premium=true;quota.free=999;if(window._targets)renderCards(window._targets);try{await fetch(API+'/dist/premium/mock',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:'u_'+Date.now(),plan:plan})})}catch(e){}}catch(e){toast('网络错误')}}
 
 function renderCards(targets){
