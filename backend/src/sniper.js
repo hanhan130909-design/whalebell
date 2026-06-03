@@ -186,6 +186,17 @@ async function getWhalesFromSupabase(limit = 10, category = null, region = null)
       .limit(Math.min(limit * 3, 100));
     if (error) { console.error('Supabase query error:', error.message, error.details); return null; }
     if (!data || data.length === 0) { console.log('No data from Supabase'); return null; }
+    // Category filter
+    if (category && STREAMER_CATEGORIES[category]) {
+      var matchTags = STREAMER_CATEGORIES[category].targetTags;
+      data = data.filter(function(w) { var tags = w.tags || []; return tags.some(function(t) { return matchTags.indexOf(t) >= 0; }); });
+    }
+    // Region filter
+    if (region) {
+      data = data.filter(function(w) { return (w.region || '').indexOf(region) >= 0; });
+    }
+    // Shuffle
+    for (var i = data.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var x = data[i]; data[i] = data[j]; data[j] = x; }
     console.log('Supabase returned:', data.length, 'whales');
     return data;
   } catch(e) { console.error('Supabase fetch error:', e.message); return null; }
