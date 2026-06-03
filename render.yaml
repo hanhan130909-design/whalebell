@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: whalebell
+    env: node
+    buildCommand: npm install
+    startCommand: node railway_start.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SUPABASE_URL
+        value: https://sxsmjfkxllepntgzfqbl.supabase.co
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: PORT
+        value: "8080"
