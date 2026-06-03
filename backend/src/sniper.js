@@ -182,6 +182,7 @@ async function getWhalesFromSupabase(limit = 10, category = null, region = null)
     const { data, error } = await supabase
       .from('whale_profiles')
       .select('*')
+      .gte('level', 30)
       .order('level', { ascending: false })
       .limit(Math.min(limit * 3, 100));
     if (error) { console.error('Supabase query error:', error.message, error.details); return null; }
