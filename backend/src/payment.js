@@ -51,17 +51,21 @@ router.get('/debug-env', (req, res) => {
 });
 
 router.get('/config', (req, res) => {
-  const mode = LEMON_API_KEY ? 'lemon' : 'manual';
+  var accounts = {
+    gopay: { icon: '📱', name: 'GoPay', number: process.env.PAY_GOPAY || '未设置' },
+    dana:  { icon: '💳', name: 'Dana',  number: process.env.PAY_DANA  || '未设置' },
+    ovo:   { icon: '🟣', name: 'OVO',   number: process.env.PAY_OVO   || '未设置' },
+    bca:   { icon: '🏦', name: 'Bank BCA', number: process.env.PAY_BCA || '未设置' },
+    holder: process.env.PAY_HOLDER || 'WhaleBell'
+  };
   res.json({
-    mode,
-    plans: Object.entries(PLANS).map(([key, val]) => ({
-      id: key, name: val.name, price: val.price,
-      priceLabel: `${(val.price / 1000).toFixed(0)}K`,
-      priceUSD: val.priceUSD, days: val.days
-    })),
-    storeId: LEMON_STORE_ID || null,
-    ready: mode === 'lemon',
-    registerUrl: 'https://app.lemonsqueezy.com/signup'
+    mode: 'manual',
+    plans: [
+      { id: 'weekly', name: '周卡', price: 29000, priceLabel: '29K', days: 7 },
+      { id: 'monthly', name: '月卡', price: 79000, priceLabel: '79K', days: 30 }
+    ],
+    accounts: accounts,
+    holder: accounts.holder
   });
 });
 
