@@ -9,6 +9,14 @@ process.on('unhandledRejection', (reason) => {
   console.error('UNHANDLED REJECTION:', reason);
 });
 
+// Keep-alive diagnostics
+let exitReason = 'unknown';
+process.on('exit', (code) => {
+  console.error(`EXIT CODE: ${code} | REASON: ${exitReason}`);
+});
+process.on('SIGTERM', () => { exitReason = 'SIGTERM'; console.error('Received SIGTERM'); });
+process.on('SIGINT', () => { exitReason = 'SIGINT'; console.error('Received SIGINT'); });
+process.on('SIGHUP', () => { exitReason = 'SIGHUP'; console.error('Received SIGHUP'); });
 
  * WhaleBell Backend Server
  * TikTok主播实时高等级观众提醒系统
@@ -29,7 +37,8 @@ const sniperRoutes = require('./sniper');
 const distRoutes = require('./distribution');
 
 const app = express();
-const PORT = process.env.PORT || 3101;
+const PORT = process.env.PORT || process.env.RAILWAY_PORT || 3101;
+console.log(`PORT from env: ${process.env.PORT}, using: ${PORT}`);
 
 // Middleware
 app.use(cors());
