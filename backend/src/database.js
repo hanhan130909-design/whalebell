@@ -31,13 +31,18 @@ if (supabaseUrl && anonKey) {
 // ============================================================
 
 async function createUser(email, password, displayName) {
-  const { data, error } = await supabase.auth.signUp({
+  // Use admin API to bypass rate limits
+  const { data, error } = await supabase.auth.admin.createUser({
     email,
     password,
-    options: { data: { display_name: displayName } }
+    email_confirm: true,
+    user_metadata: { display_name: displayName }
   });
   if (error) throw error;
-  return data;
+  // Auto-login after creation
+  const { data: sessionData, error: loginError } = await supabase.auth.signInWithPassword({ email, password });
+  if (loginError) throw loginError;
+  return { user: sessionData.user, session: sessionData.session };
 }
 
 async function loginUser(email, password) {
