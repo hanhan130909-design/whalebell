@@ -44,7 +44,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0A0A1A;
 .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#FF6B9D;color:#fff;padding:8px 20px;border-radius:20px;font-size:13px;z-index:200}
 </style></head>
 <body>
-<div class="header"><h1>🐋 WhaleBell</h1><div class="badge">🎯 化妆间狙击</div><div class="timer" id="timer">30:00</div><div style="font-size:12px;color:#8E8EA0">化妆准备时间</div></div>
+<div class="header"><h1>🐋 WhaleBell</h1>
+<div style="display:flex;gap:4px;justify-content:center;margin:6px 0"><button onclick="setLang('zh')" id="btnZH" style="background:rgba(255,107,157,0.8);border:none;color:#fff;padding:2px 10px;border-radius:6px;font-size:10px;cursor:pointer">中文</button><button onclick="setLang('en')" id="btnEN" style="background:none;border:1px solid rgba(255,255,255,0.3);color:rgba(255,255,255,0.6);padding:2px 10px;border-radius:6px;font-size:10px;cursor:pointer">EN</button><button onclick="setLang('id')" id="btnID" style="background:none;border:1px solid rgba(255,255,255,0.3);color:rgba(255,255,255,0.6);padding:2px 10px;border-radius:6px;font-size:10px;cursor:pointer">ID</button></div><div class="badge">🎯 化妆间狙击</div><div class="timer" id="timer">30:00</div><div style="font-size:12px;color:#8E8EA0">化妆准备时间</div></div>
 <div class="quota"><span>🎯 今日剩余 <b id="quotaNum">5</b> 个名额</span><button class="btn" onclick="openPay()">💎 升级VIP</button></div>
 <div class="tip">💡 点赞+评论大哥视频，开播后<strong>30%概率</strong>进你直播间</div>
 <div class="section">🎯 今日狙击目标</div>
@@ -61,17 +62,58 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0A0A1A;
 <div id="payStep3" style="display:none;text-align:center"><div style="font-size:40px">🎉</div><h3>VIP激活成功!</h3><button class="btn btn-primary" onclick="closePay()">开始狙击!</button></div></div></div>
 
 <script>
-var API='/api', plan='weekly';
+var API='/api', plan='weekly', lang='zh', quota={free:5,total:5,premium:false};
+
+// i18n
+var T = {
+zh:{badge:'🎯 化妆间狙击',prep:'化妆准备时间',quota:'今日剩余',target:'个狙击名额',vip:'升级VIP',tip:'点赞+评论大哥视频，开播后有30%概率进你直播间！',section:'今日狙击目标',copy:'复制话术',tt:'TikTok',locked:'🔒 已锁定',unlock:'邀请解锁',invite:'邀请+2'},
+en:{badge:'🎯 Vanity Sniper',prep:'Prep time',quota:'Remaining',target:'targets',vip:'Upgrade VIP',tip:'Like+comment their video, 30% chance they visit!',section:"Today's Targets",copy:'Copy',tt:'TikTok',locked:'🔒 Locked',unlock:'Unlock',invite:'Invite +2'},
+id:{badge:'🎯 Sniper Dandan',prep:'Waktu dandan',quota:'Sisa',target:'target',vip:'VIP',tip:'Like+komen video, 30% kemungkinan mampir!',section:'Target Hari Ini',copy:'Salin',tt:'TikTok',locked:'🔒 Terkunci',unlock:'Buka',invite:'Ajak +2'}
+};
+function t(k){return T[lang]?.[k]||T.en[k]||k}
+function setLang(l){lang=l;var b={zh:'btnZH',en:'btnEN',id:'btnID'};['btnZH','btnEN','btnID'].forEach(function(id){var el=document.getElementById(id);if(el){el.style.background=id===b[l]?'rgba(255,107,157,0.8)':'none';el.style.color=id===b[l]?'#fff':'rgba(255,255,255,0.6)'}});updateLang();if(window._targets)renderCards(window._targets)}
+function updateLang(){
+  var el=document.querySelector('.badge');if(el)el.textContent=t('badge');
+  var el2=document.querySelector('.header div:last-child');if(el2)el2.textContent=t('prep');
+  var el3=document.querySelector('.quota span');if(el3)el3.innerHTML='🎯 '+t('quota')+' <b id=quotaNum>'+(quota.premium?'∞':quota.free)+'</b> '+t('target');
+  var el5=document.querySelector('.section');if(el5)el5.textContent='🎯 '+t('section');
+  var el4=document.querySelector('.tip');if(el4)el4.innerHTML='💡 '+t('tip');
+  var btns=document.querySelectorAll('.bottom button');if(btns[0])btns[0].textContent='👯 '+t('invite');if(btns[1])btns[1].textContent='💎 '+t('vip');
+}
+
 function selPlan(p){plan=p;document.getElementById('planW').style.borderColor=p==='weekly'?'#FF6B9D':'#2A2A45';document.getElementById('planM').style.borderColor=p==='monthly'?'#FF6B9D':'#2A2A45'}
 function openPay(){document.getElementById('payModal').classList.add('show')}
 function closePay(){document.getElementById('payModal').classList.remove('show');document.getElementById('payStep1').style.display='block';document.getElementById('payStep2').style.display='none'}
 function showPayStep2(){document.getElementById('payStep1').style.display='none';document.getElementById('payStep2').style.display='block';loadAccts()}
 function toast(m){var d=document.createElement('div');d.className='toast';d.textContent=m;document.body.appendChild(d);setTimeout(function(){d.remove()},2000)}
-function copyText(t){navigator.clipboard.writeText(t).then(function(){toast('已复制')})}
+function copyText(t){navigator.clipboard.writeText(t).then(function(){toast('✅ 已复制')})}
 function loadAccts(){fetch(API+'/pay/config').then(function(r){return r.json()}).then(function(d){var el=document.getElementById('accts');el.innerHTML='';if(d.accounts){var ks=Object.keys(d.accounts);for(var i=0;i<ks.length;i++){var a=d.accounts[ks[i]];var div=document.createElement('div');div.style.cssText='padding:6px 0;border-bottom:1px solid #2A2A45;display:flex;justify-content:space-between';div.innerHTML='<span>'+a.icon+' '+a.name+': '+a.number+'</span><span style=color:#FF6B9D;cursor:pointer>📋</span>';div.querySelector('span:last-child').onclick=(function(num){return function(){copyText(num)}})(a.number);el.appendChild(div)}}else{el.innerHTML='暂无收款账户'}}).catch(function(){})}
-async function submitPay(){var n=document.getElementById('payName').value,m=document.getElementById('payMethod').value;if(!n)return toast('请输入名字');if(!m)return toast('请选择转账方式');try{var o=await(await fetch(API+'/pay/order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:'u_'+Date.now(),plan:plan})})).json();await(await fetch(API+'/pay/upload',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({orderId:o.orderId,paymentMethod:m,senderName:n})})).json();document.getElementById('payStep2').style.display='none';document.getElementById('payStep3').style.display='block';try{await fetch(API+'/dist/premium/mock',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:'u_'+Date.now(),plan:plan})})}catch(e){}}catch(e){toast('网络错误')}}
-async function loadWhales(){try{var r=await fetch(API+'/sniper/targets?lang=zh');var d=await r.json();if(d.success&&d.targets.length){var h='';var em={50:'👑',49:'💎',48:'💎',47:'💎',46:'🦁',45:'🦁',44:'🦁',43:'🦁',42:'🐯',41:'🐯',40:'🐯'};for(var i=0;i<d.targets.length;i++){var t=d.targets[i];var e=em[t.level]||'⭐';h+='<div class=card><div class=av>'+e+'</div><div class=info><div class=name>'+t.nickname+'<span class=lv>LV'+t.level+'</span></div><div class=meta>@'+t.username+' | '+(t.region||'')+' | '+t.templateType+'</div><div class=comment>\" '+t.comment.substring(0,70)+'...\"</div><div class=btns><button class=btn-copy id=cb'+i+'>📋 复制话术</button><a class=btn-tt href=https://www.tiktok.com/@'+t.username+' target=_blank>🔗 TikTok</a></div></div></div>'}document.getElementById('list').innerHTML=h;for(var j=0;j<d.targets.length;j++){(function(idx,t){document.getElementById('cb'+idx).onclick=function(){copyText(t.comment)}})(j,d.targets[j])}}}catch(e){document.getElementById('list').innerHTML='<div class=loading>😢 加载失败</div>'}}
+async function submitPay(){var n=document.getElementById('payName').value,m=document.getElementById('payMethod').value;if(!n)return toast('请输入名字');if(!m)return toast('请选择转账方式');try{var o=await(await fetch(API+'/pay/order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:'u_'+Date.now(),plan:plan})})).json();await(await fetch(API+'/pay/upload',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({orderId:o.orderId,paymentMethod:m,senderName:n})})).json();document.getElementById('payStep2').style.display='none';document.getElementById('payStep3').style.display='block';quota.premium=true;quota.free=999;if(window._targets)renderCards(window._targets);try{await fetch(API+'/dist/premium/mock',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:'u_'+Date.now(),plan:plan})})}catch(e){}}catch(e){toast('网络错误')}}
+
+function renderCards(targets){
+  var h='';var em={50:'👑',49:'💎',48:'💎',47:'💎',46:'🦁',45:'🦁',44:'🦁',43:'🦁',42:'🐯',41:'🐯',40:'🐯'};
+  for(var i=0;i<targets.length;i++){
+    var t=targets[i];var e=em[t.level]||'⭐';
+    var locked=!quota.premium&&i>=quota.free;
+    if(locked){h+='<div class=card style=opacity:0.4><div class=av>🔒</div><div class=info><div class=name>'+t('locked')+'</div><div class=meta>'+t('unlock')+' — 邀请好友或升级VIP</div></div></div>';continue}
+    h+='<div class=card><div class=av>'+e+'</div><div class=info><div class=name>'+t.nickname+'<span class=lv>LV'+t.level+'</span></div><div class=meta>@'+t.username+' | '+(t.region||'')+' | '+t.templateType+'</div><div class=comment>\" '+t.comment.substring(0,70)+'...\"</div><div class=btns><button class=btn-copy id=cb'+i+'>📋 '+t('copy')+'</button><a class=btn-tt href=https://www.tiktok.com/@'+t.username+' target=_blank>🔗 '+t('tt')+'</a></div></div></div>';
+  }
+  document.getElementById('list').innerHTML=h||'<div class=loading>😢 暂无数据</div>';
+  for(var j=0;j<targets.length;j++){(function(idx,t){var btn=document.getElementById('cb'+idx);if(btn)btn.onclick=function(){copyText(t.comment)}})(j,targets[j])}
+}
+
+async function loadWhales(){
+  try{var r=await fetch(API+'/sniper/targets?lang='+lang+'&limit=10');var d=await r.json();
+  if(d.success&&d.targets.length){window._targets=d.targets;renderCards(d.targets)}}
+  catch(e){document.getElementById('list').innerHTML='<div class=loading>😢 加载失败</div>'}
+  updateLang();
+}
+
+// Try loading quota from API
+function loadQuota(){fetch(API+'/dist/quota?userId=u_test').then(function(r){return r.json()}).then(function(d){quota=d;quota.free=d.freeQuota||5;quota.premium=d.isPremium||false;document.getElementById('quotaNum').textContent=quota.premium?'∞':quota.free;if(window._targets)renderCards(window._targets)}).catch(function(){})}
+
 var sec=1800;setInterval(function(){if(sec>0)sec--;var m=Math.floor(sec/60),s=sec%60;document.getElementById('timer').textContent=('0'+m).slice(-2)+':'+('0'+s).slice(-2)},1000);
-loadWhales();
+
+loadWhales();loadQuota();
 </script>
 </body></html>
