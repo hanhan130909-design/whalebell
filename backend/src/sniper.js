@@ -168,13 +168,15 @@ try {
 async function getWhalesFromSupabase(limit = 10, category = null) {
   if (!supabase) return null;
   try {
-    let query = supabase.from('whale_profiles').select('*').order('level', { ascending: false }).limit(limit);
-    if (category && STREAMER_CATEGORIES[category]) {
-      const targetTags = STREAMER_CATEGORIES[category].targetTags;
-      query = query.contains('tags', targetTags);
-    }
-    const { data, error } = await query;
+    // Simple query, no contains() filter (encoding issues with CJK characters)
+    const { data, error } = await supabase
+      .from('whale_profiles')
+      .select('*')
+      .order('level', { ascending: false })
+      .limit(Math.min(limit * 3, 100));
     if (error) { console.error('Supabase query error:', error.message, error.details); return null; }
+    if (!data || data.length === 0) { console.log('No data from Supabase'); return null; }
+    console.log('Supabase returned:', data.length, 'whales');
     return data;
   } catch(e) { console.error('Supabase fetch error:', e.message); return null; }
 }
