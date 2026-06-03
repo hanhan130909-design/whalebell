@@ -157,6 +157,42 @@ function getDeepLinks(username) {
 }
 
 // ============================================================
+// Supabase 真实数据源 (fallback to mock)
+// ============================================================
+const { createClient } = require('@supabase/supabase-js');
+let supabase = null;
+try {
+  supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_KEY);
+} catch(e) { console.error('Supabase init error:', e.message); }
+
+async function getWhalesFromSupabase(limit = 10, category = null) {
+  if (!supabase) return null;
+  try {
+    let query = supabase.from('whale_profiles').select('*').order('level', { ascending: false }).limit(limit);
+    if (category && STREAMER_CATEGORIES[category]) {
+      const targetTags = STREAMER_CATEGORIES[category].targetTags;
+      query = query.contains('tags', targetTags);
+    }
+    const { data, error } = await query;
+    if (error) { console.error('Supabase query error:', error.message); return null; }
+    return data;
+  } catch(e) { console.error('Supabase error:', e.message); return null; }
+}
+
+function supabaseWhaleToTarget(w, lang) {
+  const template = matchTemplate(w.tags || ['high_level'], lang);
+  const links = getDeepLinks(w.username);
+  return {
+    id: w.id, username: w.username, nickname: w.nickname || w.username,
+    level: w.level || 0, tags: w.tags || [], persona: w.persona,
+    lastActive: 'Online', comment: template.comment, templateType: template.templateType,
+    deepLinks: links, videoUrl: links.web, totalCoins: w.total_coins,
+    region: w.region, roomsVisited: w.rooms_visited
+  };
+}
+
+
+// ============================================================
 // 大哥数据 (mock — 后续接 WhaleSense 真实数据)
 // ============================================================
 const TARGETS = [
@@ -186,10 +222,40 @@ const STREAMER_CATEGORIES = {
 // ============================================================
 // GET /api/sniper/targets — 获取今日狙击目标
 // ============================================================
-router.get('/targets', (req, res) => {
+router.get('/targets', async (req, res) => {
   const { userId, limit, category, lang } = req.query;
   const count = parseInt(limit) || 10;
   const language = lang || 'id';
+
+  // Try Supabase first
+  let rawTargets = await getWhalesFromSupabase(count, category);
+  
+  // Fallback to mock
+  if (!rawTargets || rawTargets.length === 0) {
+    rawTargets = TARGETS;
+  } else {
+    rawTargets = rawTargets.map(w => supabaseWhaleToTarget(w, language));
+    // Score and sort
+    let scored = rawTargets.map(t => {
+      let score = t.level * 10 + (t.isPremium ? 50 : 0);
+      if (category && STREAMER_CATEGORIES[category]) {
+        const cat = STREAMER_CATEGORIES[category];
+        const matchCount = (t.tags || []).filter(tag => cat.targetTags.includes(tag)).length;
+        score += matchCount * 15 * cat.weight;
+      }
+      return { ...t, score };
+    });
+    scored.sort((a, b) => b.score - a.score);
+    
+    return res.json({
+      success: true,
+      source: 'supabase',
+      total: rawTargets.length,
+      targets: scored.slice(0, count),
+      categories: Object.entries(STREAMER_CATEGORIES).map(([k, v]) => ({ id: k, label: v.label })),
+      tip: { id: 'Like + komen, 30% mampir!', zh: '点赞+评论，30%概率进直播间！', en: 'Like+comment, 30% visit!' }
+    });
+  }
 
   let scored = TARGETS.map(t => {
     let score = t.level * 10 + (t.isPremium ? 50 : 0);
