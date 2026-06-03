@@ -1,6 +1,5 @@
 /**
  * WhaleBell — All-in-One Railway Launcher
- * Zero external module dependencies beyond package.json
  */
 const path = require('path');
 const http = require('http');
@@ -14,11 +13,13 @@ app.use(cors());
 app.use(express.json());
 
 // ── API: Sniper ──
-/**
+(function() {
+  const router = express.Router();
+  /**
  * WhaleBell Vanity Sniper API v2.0
  * 化妆间狙击模式 — 话术引擎 + 标签匹配 + Deep Link
  */
-const router = express.Router();
+
 
 // ============================================================
 // 话术模板引擎 — 按大哥人格类型匹配
@@ -293,16 +294,17 @@ router.post('/comment', (req, res) => {
   const result = matchTemplate(tags, lang || 'id');
   res.json(result);
 });
+  app.use('/api/sniper', router);
+})();
 
-app.use('/api/sniper', router);
-
-
-// ── API: Distribution ──
-/**
+// ── API: Distribution ──  
+(function() {
+  const router = express.Router();
+  /**
  * WhaleBell Distribution System v2.0
  * 多级裂变 + 现金抽成 + 姐妹拼团 + 佣金系统
  */
-const router = express.Router();
+
 
 // ============================================================
 // In-memory store → 后续迁移到 Supabase
@@ -671,9 +673,8 @@ router.get('/commission', (req, res) => {
     history: commission.history.slice(-20)
   });
 });
-
-app.use('/api/dist', router);
-
+  app.use('/api/dist', router);
+})();
 
 // ── Static Frontend ──
 app.use(express.static(path.join(__dirname, 'frontend')));
@@ -689,12 +690,7 @@ const server = http.createServer(app);
 server.on('error', (e) => { console.error('SERVER ERROR:', e.message); process.exit(1); });
 server.listen(PORT, '0.0.0.0', () => {
   console.log('🐋 WhaleBell on 0.0.0.0:' + PORT);
-  console.log('📊 ' + PORT + '/dashboard.html');
 });
 
-// Keep process alive
 setInterval(() => {}, 30000);
-
-// Global error catching
-process.on('uncaughtException', (e) => console.error('EXCEPTION:', e.message));
-process.on('unhandledRejection', (r) => console.error('REJECTION:', r));
+process.on('uncaughtException', (e) => console.error('E:', e.message));
