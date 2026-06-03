@@ -164,7 +164,7 @@ function applyL(){
 document.getElementById('badge').textContent=t('badge');document.getElementById('timerSub').textContent=t('timerSub');
 document.getElementById('quotaLabel').textContent='🎯 '+t('quota');document.getElementById('quotaUnit').textContent=t('unit');document.getElementById('vipBtn').textContent=t('vip');
 document.getElementById('lblTotal').textContent=t('total');document.getElementById('lblDone').textContent=t('done');document.getElementById('lblFree').textContent=t('free');document.getElementById('lblMax').textContent=t('max');
-document.getElementById('tipText').textContent=t('tip');document.getElementById('secTitle').textContent=t('sec');
+document.getElementById('tipText').textContent=t('tip');document.getElementById('secTitle').textContent=t('sec');updateCats();
 }
 
 function logout(){localStorage.clear();window.location.href='/index.html'}
@@ -174,6 +174,8 @@ function toggleSniped(id){if(sniped[id]){delete sniped[id]}else{sniped[id]=true}
 function copyText(tx){navigator.clipboard.writeText(tx).then(function(){toast('✅ '+t('copy'))})}
 
 // Category filter
+var CATS={zh:['全部','💃 热舞','✨ 颜值','🎤 唱歌','😂 搞笑','🎮 游戏','💬 聊天'],en:['All','💃 Dance','✨ Beauty','🎤 Singer','😂 Comedy','🎮 Games','💬 Chat'],id:['Semua','💃 Dansa','✨ Cantik','🎤 Nyanyi','😂 Lucu','🎮 Game','💬 Obrolan']};
+function updateCats(){var labels=CATS[L]||CATS.en;for(var i=0;i<7;i++){var btn=document.getElementById('catBtn'+i);if(btn)btn.textContent=labels[i]}}
 function filterCat(c){cat=c;document.querySelectorAll('.cats button').forEach(function(b,i){b.className=i===0&&!c?'active':b.textContent.includes(c.replace('dance','热舞').replace('beauty','颜值').replace('singer','唱歌').replace('comedy','搞笑').replace('gaming','游戏').replace('talk','聊天'))?'active':''});loadWhales()}
 
 // Payment
@@ -229,7 +231,7 @@ var tags=(w.tags||[]).slice(0,3),coins=w.totalCoins||0;
 if(locked){h+='<div class="card locked"><div class="lock-overlay" onclick="openModalInvite()"><div style="font-size:32px">🔒</div><div style="font-size:14px;font-weight:700;margin:4px 0">'+t('locked')+'</div><div style="font-size:11px;color:var(--dim)">'+t('unlock')+'</div></div><div class="row"><div class="av">🔒</div><div class="info"><div class="name">'+t('locked')+'</div><div class="uname">-----</div></div></div></div>';continue}
 h+='<div class="card'+(w.isPremium?' premium':'')+'"><div class="row"><div class="av">'+e+'</div><div class="info"><div class="name">'+name+'<span class="lv">LV'+w.level+'</span></div><div class="uname">@'+w.username+'</div><div class="tags">'+tags.map(function(tg){return '<span class="tag">'+tt(tg)+'</span>'}).join('')+(w.persona?'<span class="tag persona">'+tt(w.persona)+'</span>':'')+'<span class="tag" style="background:rgba(255,215,0,0.12);color:#FFD700">'+tp+'</span></div><div class="meta"><span>📍 '+region+'</span><span>💰 '+(coins>0?(coins>=1000?(coins/1000).toFixed(1)+'K':coins):'N/A')+'</span><span>🟢 Online</span></div><div class="comment">" '+(w.comment||'').substring(0,80)+'..."</div><div class="btns"><button class="btn-snipe" id="sn'+i+'" onclick="toggleSniped('+w.id+')" style="background:rgba(0,230,118,0.12);color:#00E676;border:1px solid rgba(0,230,118,0.25);padding:6px 10px;border-radius:6px;font-size:11px;cursor:pointer;min-width:60px">☑️ 已狙</button><button class="btn-copy" id="cb'+i+'">📋 '+t('copy')+'</button><a class="btn-tt" onclick="openTT(this)" data-user="'+w.username+'" href="#">📱 '+t('tt')+'</a></div></div></div></div>'
 }
-document.getElementById('list').innerHTML=h||'<div class=loading-page>😢 '+t('nodata')+'</div>';
+document.getElementById('list').innerHTML=h||'<div class=loading-page>😢 暂无数据</div>';
 for(var j=0;j<targets.length;j++){(function(idx,t){var btn=document.getElementById('cb'+idx);if(btn)btn.onclick=function(){copyText(t.comment||'')};var sn=document.getElementById('sn'+idx);if(sn){if(sniped[t.id]){sn.textContent='✅ 已狙击';sn.style.background='rgba(0,230,118,0.3)'}else{sn.textContent='☑️ 已狙';sn.style.background='rgba(0,230,118,0.12)'}}})(j,targets[j])}
 }
 
