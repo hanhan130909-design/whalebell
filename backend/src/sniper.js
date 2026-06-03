@@ -159,24 +159,24 @@ function getDeepLinks(username) {
 // ============================================================
 // Supabase 真实数据源 (fallback to mock)
 // ============================================================
-const { createClient } = require('@supabase/supabase-js');
-let supabase = null;
-try {
-  supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY);
-} catch(e) { console.error('Supabase init error:', e.message); }
+
+
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
 
 async function getWhalesFromSupabase(limit = 10, category = null) {
-  if (!supabase) return null;
+  if (!SUPABASE_URL || !SUPABASE_KEY) return null;
   try {
-    // Simple query, no contains() filter (encoding issues with CJK characters)
-    const { data, error } = await supabase
-      .from('whale_profiles')
-      .select('*')
-      .order('level', { ascending: false })
-      .limit(Math.min(limit * 3, 100));
-    if (error) { console.error('Supabase query error:', error.message, error.details); return null; }
-    if (!data || data.length === 0) { console.log('No data from Supabase'); return null; }
-    console.log('Supabase returned:', data.length, 'whales');
+    const https = require('https');
+    const url = SUPABASE_URL + '/rest/v1/whale_profiles?select=*&order=level.desc&limit=' + Math.min(limit * 3, 100);
+    const u = new URL(url);
+    const data = await new Promise((resolve, reject) => {
+      https.get({ hostname: u.hostname, path: u.pathname + u.search, headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + SUPABASE_KEY }}, res => {
+        let body = ''; res.on('data', c => body += c); res.on('end', () => { try { resolve(JSON.parse(body)); } catch(e) { resolve(null); } });
+      }).on('error', reject);
+    });
+    if (!Array.isArray(data)) return null;
+    console.log('Supabase: ' + data.length + ' whales');
     return data;
   } catch(e) { console.error('Supabase fetch error:', e.message); return null; }
 }
@@ -251,7 +251,7 @@ router.get('/targets', async (req, res) => {
     
     return res.json({
       success: true,
-      version: 7,
+      version: 8,
       source: 'supabase',
       total: rawTargets.length,
       targets: scored.slice(0, count),
