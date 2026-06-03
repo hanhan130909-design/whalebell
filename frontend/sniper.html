@@ -66,9 +66,9 @@ var API='/api', plan='weekly', lang='zh', quota={free:5,total:5,premium:false};
 
 // i18n
 var T = {
-zh:{badge:'🎯 化妆间狙击',prep:'化妆准备时间',quota:'今日剩余',target:'个狙击名额',vip:'升级VIP',tip:'点赞+评论大哥视频，开播后有30%概率进你直播间！',section:'今日狙击目标',copy:'复制话术',tt:'TikTok',locked:'🔒 已锁定',unlock:'邀请解锁',invite:'邀请+2'},
-en:{badge:'🎯 Vanity Sniper',prep:'Prep time',quota:'Remaining',target:'targets',vip:'Upgrade VIP',tip:'Like+comment their video, 30% chance they visit!',section:"Today's Targets",copy:'Copy',tt:'TikTok',locked:'🔒 Locked',unlock:'Unlock',invite:'Invite +2'},
-id:{badge:'🎯 Sniper Dandan',prep:'Waktu dandan',quota:'Sisa',target:'target',vip:'VIP',tip:'Like+komen video, 30% kemungkinan mampir!',section:'Target Hari Ini',copy:'Salin',tt:'TikTok',locked:'🔒 Terkunci',unlock:'Buka',invite:'Ajak +2'}
+zh:{badge:'🎯 化妆间狙击',prep:'化妆准备时间',quota:'今日剩余',target:'个狙击名额',vip:'升级VIP',tip:'点赞+评论大哥视频，开播后有30%概率进你直播间！',section:'今日狙击目标',copy:'复制话术',tt:'TikTok',locked:'🔒 已锁定',unlock:'邀请解锁',invite:'邀请+2',redeem:'兑换邀请码'},
+en:{badge:'🎯 Vanity Sniper',prep:'Prep time',quota:'Remaining',target:'targets',vip:'Upgrade VIP',tip:'Like+comment their video, 30% chance they visit!',section:"Today's Targets",copy:'Copy',tt:'TikTok',locked:'🔒 Locked',unlock:'Unlock',invite:'Invite +2',redeem:'Redeem Code'},
+id:{badge:'🎯 Sniper Dandan',prep:'Waktu dandan',quota:'Sisa',target:'target',vip:'VIP',tip:'Like+komen video, 30% kemungkinan mampir!',section:'Target Hari Ini',copy:'Salin',tt:'TikTok',locked:'🔒 Terkunci',unlock:'Buka',invite:'Ajak +2',redeem:'Pakai Kode'}
 };
 function t(k){return T[lang]?.[k]||T.en[k]||k}
 function setLang(l){lang=l;var b={zh:'btnZH',en:'btnEN',id:'btnID'};['btnZH','btnEN','btnID'].forEach(function(id){var el=document.getElementById(id);if(el){el.style.background=id===b[l]?'rgba(255,107,157,0.8)':'none';el.style.color=id===b[l]?'#fff':'rgba(255,255,255,0.6)'}});updateLang();if(window._targets)renderCards(window._targets)}
@@ -78,7 +78,7 @@ function updateLang(){
   var el3=document.querySelector('.quota span');if(el3)el3.innerHTML='🎯 '+t('quota')+' <b id=quotaNum>'+(quota.premium?'∞':quota.free)+'</b> '+t('target');
   var el5=document.querySelector('.section');if(el5)el5.textContent='🎯 '+t('section');
   var el4=document.querySelector('.tip');if(el4)el4.innerHTML='💡 '+t('tip');
-  var btns=document.querySelectorAll('.bottom button');if(btns[0])btns[0].textContent='👯 '+t('invite');if(btns[1])btns[1].textContent='💎 '+t('vip');
+  var btns=document.querySelectorAll('.bottom button');if(btns[0])btns[0].textContent='👯 '+t('invite');if(btns[1])btns[1].textContent='🔑 '+t('redeem');if(btns[2])btns[2].textContent='💎 '+t('vip');
 }
 
 function selPlan(p){plan=p;document.getElementById('planW').style.borderColor=p==='weekly'?'#FF6B9D':'#2A2A45';document.getElementById('planM').style.borderColor=p==='monthly'?'#FF6B9D':'#2A2A45'}
