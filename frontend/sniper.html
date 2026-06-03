@@ -1081,7 +1081,42 @@
       }
     }
 
-    function goPremium() {
+    
+// Lemon Squeezy checkout
+async function payWithLemon(plan) {
+  const userId = 'user_' + Date.now();
+  showToast('💳 正在创建支付链接...');
+  try {
+    const res = await fetch(`${API}/pay/order`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ userId, plan })
+    });
+    const data = await res.json();
+    
+    if (data.mode === 'lemon' && data.checkoutUrl) {
+      // Lemon Squeezy: open in new window or redirect
+      const w = window.open(data.checkoutUrl, 'whalebell_pay', 'width=480,height=720');
+      if (!w) window.location.href = data.checkoutUrl;
+    } else {
+      // Fallback to manual
+      showPaymentStep();
+      createOrder();
+    }
+  } catch(e) {
+    showPaymentStep();
+    createOrder();
+  }
+}
+
+// Override the upgrade flow
+function goPremium() {
+  const plan = currentPlan || 'monthly';
+  showModal('upgradeModal');
+  // Try Lemon first, fallback to manual
+  setTimeout(() => payWithLemon(plan), 500);
+}
+
       showToast('💎 会员功能开发中，敬请期待！');
     }
 
@@ -1586,7 +1621,42 @@ async function mockPayFallback(userId, plan) {
 }
 
 // Override goPremium to use real payment
+
+// Lemon Squeezy checkout
+async function payWithLemon(plan) {
+  const userId = 'user_' + Date.now();
+  showToast('💳 正在创建支付链接...');
+  try {
+    const res = await fetch(`${API}/pay/order`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ userId, plan })
+    });
+    const data = await res.json();
+    
+    if (data.mode === 'lemon' && data.checkoutUrl) {
+      // Lemon Squeezy: open in new window or redirect
+      const w = window.open(data.checkoutUrl, 'whalebell_pay', 'width=480,height=720');
+      if (!w) window.location.href = data.checkoutUrl;
+    } else {
+      // Fallback to manual
+      showPaymentStep();
+      createOrder();
+    }
+  } catch(e) {
+    showPaymentStep();
+    createOrder();
+  }
+}
+
+// Override the upgrade flow
 function goPremium() {
+  const plan = currentPlan || 'monthly';
+  showModal('upgradeModal');
+  // Try Lemon first, fallback to manual
+  setTimeout(() => payWithLemon(plan), 500);
+}
+
   const plan = selectedPlan || 'monthly';
   payWithMidtrans(plan);
 }
