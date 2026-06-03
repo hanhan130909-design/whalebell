@@ -241,7 +241,7 @@ router.get('/targets', async (req, res) => {
   const language = lang || 'id';
 
   // Try Supabase first
-  let var filterRegion = req.query.region || null;
+  var filterRegion = req.query.region || null;
   rawTargets = await getWhalesFromSupabase(count, category, filterRegion);
   
   // Fallback to mock
