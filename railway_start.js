@@ -20,6 +20,7 @@ try {
 app.use('/api', require('./backend/src/routes'));
 app.use('/api/sniper', require('./backend/src/sniper'));
 app.use('/api/dist', require('./backend/src/distribution'));
+app.use('/api/whales', require('./backend/src/whales_api'));
 app.use('/api/pay', require('./backend/src/payment'));
 
 // Static frontend
