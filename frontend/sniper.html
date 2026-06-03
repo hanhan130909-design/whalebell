@@ -143,6 +143,7 @@ en:{badge:'🎯 Vanity Sniper',howTitle:'Distribution',howSub:'Invite friends, e
 id:{badge:'🎯 Sniper Dandan',howTitle:'Cara Distribusi',howSub:'Ajak teman, dapat passive income',howL1:'🔗 Langsung L1 — 40%',howL1Desc:'Teman langsung kamu beli VIP -> kamu dapat 40%. Bulanan 79K -> kamu dapat 31,600 IDR',howL2:'🔗 Tidak Langsung L2 — 10%',howL2Desc:'Temannya teman kamu beli VIP -> kamu tetap dapat 10%',howGroup:'👯 Patungan',howGroupDesc:'3 orang patungan -> semua buka VIP. Leader bonus +5,000 IDR',howQuota:'Setiap undangan: berdua dapat +2 target bos',howBtn:'OK!',timerSub:'Waktu dandan',quota:'Sisa',unit:'target',vip:'VIP',total:'Total',done:'Selesai',free:'Gratis',max:'LV Max',tip:'Like+komen, 30% mampir!',sec:'🎯 Target Hari Ini',copy:'Salin',tt:'TikTok',locked:'🔒 Terkunci',unlock:'Buka',invite:'Ajak +2',redeem:'Kode',all:'Semua',refresh:'Segar'}
 };
 function t(k){return T[L][k]||T.en[k]||k}
+function st(id,val){var el=document.getElementById(id);if(el)el.textContent=val}
 
 var TT={
 zh:{high_level:'高等级',gamer:'游戏玩家',often_gifter:'高频送礼',night_owl:'夜猫子',beauty_dancer:'颜值主播',
@@ -172,7 +173,7 @@ function setL(l){L=l;['zh','en','id'].forEach(function(x){var el=document.getEle
 function applyL(){
 document.getElementById('badge').textContent=t('badge');document.getElementById('timerSub').textContent=t('timerSub');
 document.getElementById('quotaLabel').textContent='🎯 '+t('quota');document.getElementById('quotaUnit').textContent=t('unit');document.getElementById('vipBtn').textContent=t('vip');
-document.getElementById('lblTotal').textContent=t('total');document.getElementById('lblDone').textContent=t('done');document.getElementById('lblFree').textContent=t('free');document.getElementById('lblMax').textContent=t('max');document.getElementById('howTitle').textContent=t('howTitle');document.getElementById('howSub').textContent=t('howSub');document.getElementById('howL1').textContent=t('howL1');document.getElementById('howL1Desc').textContent=t('howL1Desc');document.getElementById('howL2').textContent=t('howL2');document.getElementById('howL2Desc').textContent=t('howL2Desc');document.getElementById('howGroup').textContent=t('howGroup');document.getElementById('howGroupDesc').textContent=t('howGroupDesc');document.getElementById('howQuota').textContent=t('howQuota');document.getElementById('howBtn').textContent=t('howBtn');
+document.getElementById('lblTotal').textContent=t('total');document.getElementById('lblDone').textContent=t('done');document.getElementById('lblFree').textContent=t('free');document.getElementById('lblMax').textContent=t('max');st('howTitle',t('howTitle'));st('howSub',t('howSub'));st('howL1',t('howL1'));st('howL1Desc',t('howL1Desc'));st('howL2',t('howL2'));st('howL2Desc',t('howL2Desc'));st('howGroup',t('howGroup'));st('howGroupDesc',t('howGroupDesc'));st('howQuota',t('howQuota'));st('howBtn',t('howBtn'));
 document.getElementById('tipText').textContent=t('tip');document.getElementById('secTitle').textContent=t('sec');updateCats();
 }
 
