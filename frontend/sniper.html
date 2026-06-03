@@ -1097,30 +1097,29 @@
 // ============================================================
 // Init - override to support category + deep link
 // ============================================================
-const _origInit = (async function init() {
+// Init - loads data on page start
+    (async function init() {
+      console.log('WhaleBell init start');
       try {
-        // Load quota first
-        await loadQuota();
-        await loadReferral();
-
-        // Load targets
-        const res = await fetch(`${API}/sniper/targets`);
+        // Load targets (don't wait for quota/referral)
+        const res = await fetch('/api/sniper/targets');
         const data = await res.json();
-        if (data.success) {
+        console.log('API result:', data.success, data.total);
+        if (data.success && data.targets.length > 0) {
           window._targets = data.targets;
           renderTargets(data.targets);
           const maxLv = Math.max(...data.targets.map(t => t.level));
           document.getElementById('statTargets').textContent = data.targets.length;
-          document.getElementById('statLevels').textContent = `LV${maxLv}`;
+          document.getElementById('statLevels').textContent = 'LV' + maxLv;
+          console.log('Rendered', data.targets.length, 'cards');
         }
+        // Load quota/referral in background
+        loadQuota().catch(()=>{});
+        loadReferral().catch(()=>{});
         applyLang();
       } catch (err) {
-        document.getElementById('targetList').innerHTML = `
-          <div class="loading">
-            <div style="font-size:32px;margin-bottom:8px;">😢</div>
-            <p>暂未获取到大哥数据</p>
-          </div>
-        `;
+        console.error('Init error:', err.message);
+        document.getElementById('targetList').innerHTML = '<div class=loading><p>😢 ' + err.message + '</p></div>';
       }
     })();
   </script>
