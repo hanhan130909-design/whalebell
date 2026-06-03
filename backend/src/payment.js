@@ -188,4 +188,31 @@ router.get('/admin/orders', (req, res) => {
   });
 });
 
+
+/**
+ * POST /api/pay/upload — 手动支付确认
+ */
+router.post('/upload', (req, res) => {
+  const { orderId, paymentMethod, senderName, note } = req.body;
+  const order = orders.get(orderId);
+  if (!order) return res.status(404).json({ error: 'Order not found' });
+  if (order.status !== 'pending') return res.status(400).json({ error: 'Already ' + order.status });
+
+  order.status = 'verified';
+  order.paymentMethod = paymentMethod;
+  order.senderName = senderName;
+  order.note = note;
+  order.verifiedAt = new Date().toISOString();
+  saveOrders();
+
+  console.log('✅ Payment: ' + orderId + ' via ' + paymentMethod + ' — ' + senderName);
+
+  res.json({
+    success: true,
+    message: 'Pembayaran berhasil! VIP Anda sudah aktif.',
+    orderId,
+    status: 'verified'
+  });
+});
+
 module.exports = router;
