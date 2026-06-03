@@ -673,6 +673,10 @@
     .stat-item .num.gold { color: #FFD700; }
 
 </style>
+
+  <!-- Midtrans Snap -->
+  <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="MIDTRANS_CLIENT_KEY_PLACEHOLDER"></script>
+
 </head>
 <body>
 
@@ -1368,6 +1372,123 @@ function openDeepLink(e, username, deepLink) {
   }
 }
 
+
+// ============================================================
+// Real Payment Flow (Midtrans)
+// ============================================================
+async function payWithMidtrans(plan) {
+  const userId = 'user_' + Date.now();
+  const basePlan = plan === 'weekly_plan' ? 'weekly' : 'monthly';
+  
+  showToast('💳 正在连接支付网关...');
+  
+  try {
+    // Step 1: Create order
+    const orderRes = await fetch(`${API}/pay/order`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ userId, plan: basePlan })
+    });
+    const orderData = await orderRes.json();
+    
+    if (!orderData.success) {
+      showToast('❌ ' + (orderData.error || '支付失败'));
+      return;
+    }
+    
+    if (orderData.fallback) {
+      // Midtrans unavailable, use mock
+      await mockPayFallback(userId, basePlan);
+      return;
+    }
+    
+    // Step 2: Open Midtrans Snap popup
+    if (orderData.token) {
+      window.snap.pay(orderData.token, {
+        onSuccess: async function(result) {
+          await verifyPayment(orderData.orderId, userId, basePlan);
+        },
+        onPending: function(result) {
+          showToast('⏳ 支付处理中，稍后自动确认...');
+        },
+        onError: function(result) {
+          showToast('❌ 支付失败，请重试');
+        },
+        onClose: function() {
+          showToast('支付窗口已关闭');
+        }
+      });
+    } else {
+      // No Snap token, use redirect
+      window.location.href = orderData.redirectUrl;
+    }
+  } catch (err) {
+    console.error('Payment error:', err);
+    showToast('❌ 支付网络错误');
+    // Fallback to mock
+    await mockPayFallback(userId, basePlan);
+  }
+}
+
+async function verifyPayment(orderId, userId, plan) {
+  try {
+    const res = await fetch(`${API}/pay/verify`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ orderId, userId })
+    });
+    const data = await res.json();
+    
+    if (data.success) {
+      closeModal('upgradeModal');
+      showToast('🎉 支付成功！VIP已激活');
+      await loadQuota();
+      if (window._targets) renderTargets(window._targets);
+      document.getElementById('statFree').textContent = '∞';
+    }
+  } catch (err) {
+    console.error('Verify error:', err);
+  }
+}
+
+async function mockPayFallback(userId, plan) {
+  try {
+    const res = await fetch(`${API}/dist/premium/mock`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ userId, plan })
+    });
+    const data = await res.json();
+    if (data.success) {
+      closeModal('upgradeModal');
+      showToast('🎉 ' + data.message);
+      await loadQuota();
+      if (window._targets) renderTargets(window._targets);
+      document.getElementById('statFree').textContent = '∞';
+    }
+  } catch (err) {
+    showToast('❌ 网络错误');
+  }
+}
+
+// Override goPremium to use real payment
+function goPremium() {
+  const plan = selectedPlan || 'monthly';
+  payWithMidtrans(plan);
+}
+
+// Check for payment return in URL
+(function checkPaymentReturn() {
+  const params = new URLSearchParams(window.location.search);
+  const orderId = params.get('paid');
+  if (orderId) {
+    verifyPayment(orderId, 'user_' + Date.now(), 'monthly');
+    // Clean URL
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+})();
+
+
 // ============================================================
 // Init - override to support category + deep link
 // ============================================================
@@ -1454,7 +1575,7 @@ const _origInit = (async function init() {
           <div class="daily">每天50个</div>
         </div>
       </div>
-      <button class="modal-btn secondary" onclick="mockPay()" id="payBtn">💳 支付 29K — 开通周卡</button>
+      <button class="modal-btn secondary" onclick="goPremium()" id="payBtn">💳 支付 29K — 开通周卡</button>
       <p style="font-size:11px;color:var(--text-darker);text-align:center;margin-top:8px;">
         💡 测试期间仅模拟支付
       </p>

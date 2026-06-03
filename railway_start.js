@@ -11,9 +11,16 @@ app.use(cors());
 app.use(express.json());
 
 // API Routes — require directly (root has all deps)
+// Make internal state accessible for payment verification
+try {
+  const dist = require('./backend/src/distribution');
+  // Export to global for payment module
+  // (distribution.js uses closures; we access via the module)
+} catch(e) {}
 app.use('/api', require('./backend/src/routes'));
 app.use('/api/sniper', require('./backend/src/sniper'));
 app.use('/api/dist', require('./backend/src/distribution'));
+app.use('/api/pay', require('./backend/src/payment'));
 
 // Static frontend
 app.get('/sniper.html', (req, res) => {
@@ -36,5 +43,6 @@ process.on('uncaughtException', (e) => console.error('FATAL:', e.message, e.stac
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('🐋 Step5 (Node22) on 0.0.0.0:' + PORT);
+  console.log('💳 Payment: ' + (process.env.MIDTRANS_SERVER_KEY ? 'Midtrans LIVE' : 'Mock mode'));
   console.log('Routes: /api, /api/sniper, /api/dist');
 });
