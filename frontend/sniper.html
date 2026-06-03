@@ -1,163 +1,221 @@
 <!DOCTYPE html>
-<html lang="zh">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>WhaleBell</title>
+<html lang="zh"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"><title>WhaleBell 🐋</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0A0A1A;color:#fff;min-height:100vh;padding-bottom:80px}
-.header{background:linear-gradient(135deg,#1A0A2E,#2A0A4E);padding:20px 16px 24px;text-align:center}
-.header h1{font-size:22px;background:linear-gradient(135deg,#FF6B9D,#FFD700);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.header .badge{display:inline-block;background:rgba(255,107,157,0.2);border:1px solid rgba(255,107,157,0.4);padding:4px 12px;border-radius:20px;font-size:11px;color:#FF6B9D;margin-top:8px}
-.timer{font-size:36px;font-weight:800;color:#FFD700;margin:8px 0}
-.quota{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:#16162A;font-size:13px}
-.quota .btn{background:linear-gradient(135deg,#FFD700,#FF8C00);color:#000;border:none;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer}
-.tip{padding:12px 16px;font-size:12px;color:#8E8EA0;border-bottom:1px solid #2A2A45}
-.tip strong{color:#FFD700}
-.section{padding:12px 16px 0;font-size:16px;font-weight:700}
-.cards{padding:8px 16px}
-.card{background:#16162A;border:1px solid #2A2A45;border-radius:12px;padding:12px;margin-bottom:8px;display:flex;gap:10px}
-.card .av{font-size:28px;width:40px;text-align:center}
-.card .info{flex:1}
-.card .name{font-weight:700;font-size:15px}
-.card .name .lv{display:inline-block;background:linear-gradient(135deg,#FDCB6E,#E17055);color:#000;padding:1px 8px;border-radius:8px;font-size:10px;margin-left:6px}
-.card .meta{font-size:11px;color:#8E8EA0;margin:2px 0}
-.card .comment{font-size:12px;color:#aaa;font-style:italic;margin:6px 0}
-.card .btns{display:flex;gap:6px}
-.card .btn-copy{background:rgba(255,107,157,0.15);color:#FF6B9D;border:1px solid rgba(255,107,157,0.3);padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer}
-.card .btn-tt{background:#FF6B9D;color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;text-decoration:none}
-.bottom{position:fixed;bottom:0;left:0;right:0;background:#16162A;border-top:1px solid #2A2A45;padding:10px 16px;display:flex;gap:8px;z-index:10}
-.bottom button{flex:1;padding:10px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer}
-.bottom .invite{background:#16162A;color:#fff;border:1px solid #2A2A45}
-.bottom .vip{background:linear-gradient(135deg,#FFD700,#FF8C00);color:#000;border:none}
-.loading{text-align:center;padding:40px;color:#8E8EA0}
-.loading .spin{display:inline-block;width:24px;height:24px;border:2px solid #2A2A45;border-top-color:#FF6B9D;border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:8px}
+:root{--bg:#0A0A1A;--card:#16162A;--pink:#FF6B9D;--gold:#FFD700;--purple:#7C5CFC;--text:#fff;--dim:#8E8EA0;--border:#2A2A45;--radius:14px}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:80px}
+.header{background:linear-gradient(135deg,#1A0A2E 0%,#2A0A4E 50%,#1A0A2E 100%);padding:20px 16px 24px;position:relative;overflow:hidden;text-align:center}
+.header::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(124,92,252,0.1) 0%,transparent 60%);animation:rot 10s linear infinite}
+@keyframes rot{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.header h1{font-size:22px;font-weight:800;background:linear-gradient(135deg,var(--pink),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;position:relative;z-index:1}
+.header .badge{display:inline-block;background:rgba(255,107,157,0.2);border:1px solid rgba(255,107,157,0.4);padding:4px 14px;border-radius:20px;font-size:11px;color:var(--pink);margin:8px 0;position:relative;z-index:1}
+.header .timer{font-size:42px;font-weight:800;color:var(--gold);position:relative;z-index:1;margin:6px 0}
+.header .timer-sub{font-size:12px;color:var(--dim);position:relative;z-index:1}
+.lang{display:flex;gap:4px;justify-content:center;margin-top:8px;position:relative;z-index:1}
+.lang button{background:none;border:1px solid rgba(255,255,255,0.2);color:var(--dim);padding:2px 10px;border-radius:6px;font-size:10px;cursor:pointer}
+.lang button.active{background:rgba(255,107,157,0.3);border-color:var(--pink);color:#fff}
+.logout{position:absolute;top:12px;right:16px;z-index:2;background:rgba(255,255,255,0.08);border:none;color:var(--dim);padding:4px 12px;border-radius:6px;font-size:11px;cursor:pointer}
+.quota{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--card);font-size:13px;border-bottom:1px solid var(--border)}
+.quota .num{color:var(--pink);font-weight:700}
+.quota .btn{background:linear-gradient(135deg,var(--gold),#FF8C00);color:#000;border:none;padding:6px 16px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer}
+.stats{display:flex;padding:12px 16px;gap:0}
+.stat{flex:1;text-align:center}
+.stat .v{font-size:18px;font-weight:700}
+.stat .l{font-size:10px;color:var(--dim);margin-top:2px}
+.stat .v.gold{color:var(--gold)}
+.tip{padding:10px 16px;font-size:11px;color:var(--dim);border-bottom:1px solid var(--border)}
+.tip strong{color:var(--gold)}
+.cats{padding:10px 16px 4px;display:flex;gap:6px;flex-wrap:wrap}
+.cats button{background:var(--card);color:var(--dim);border:1px solid var(--border);padding:5px 12px;border-radius:16px;font-size:11px;cursor:pointer}
+.cats button.active{background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;border-color:transparent}
+.section{padding:8px 16px;display:flex;justify-content:space-between;align-items:center}
+.section h2{font-size:15px}
+.section .refresh{background:none;border:none;color:var(--pink);font-size:18px;cursor:pointer;animation:none}
+.section .refresh.loading{animation:spin 0.8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:100;align-items:center;justify-content:center}
+.cards{padding:4px 16px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:8px;position:relative}
+.card.premium{border-color:var(--gold);box-shadow:0 0 20px rgba(255,215,0,0.08)}
+.card.locked{opacity:0.35;filter:blur(1px)}
+.card.locked .lock-overlay{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2;cursor:pointer}
+.card .row{display:flex;align-items:flex-start;gap:10px}
+.card .av{font-size:32px;min-width:44px;text-align:center;line-height:1}
+.card .info{flex:1}
+.card .name{font-weight:700;font-size:15px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.card .lv{display:inline-block;background:linear-gradient(135deg,#FDCB6E,#E17055);color:#000;padding:1px 8px;border-radius:8px;font-size:10px;font-weight:700}
+.card .uname{font-size:11px;color:var(--dim);margin:2px 0}
+.card .tags{display:flex;gap:4px;flex-wrap:wrap;margin:4px 0}
+.card .tag{font-size:10px;padding:2px 6px;border-radius:4px;background:rgba(124,92,252,0.15);color:var(--purple)}
+.card .tag.persona{background:rgba(0,230,118,0.15);color:#00E676}
+.card .meta{font-size:11px;color:var(--dim);margin:2px 0;display:flex;gap:12px}
+.card .comment{font-size:12px;color:#aaa;font-style:italic;margin:8px 0;padding:6px 10px;background:rgba(255,255,255,0.03);border-radius:6px;border-left:2px solid var(--border)}
+.card .btns{display:flex;gap:6px}
+.card .btn-copy{background:rgba(255,107,157,0.12);color:var(--pink);border:1px solid rgba(255,107,157,0.25);padding:6px 12px;border-radius:6px;font-size:11px;cursor:pointer;flex:1}
+.card .btn-tt{background:var(--pink);color:#fff;border:none;padding:6px 12px;border-radius:6px;font-size:11px;cursor:pointer;text-decoration:none;text-align:center}
+.bottom{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);padding:8px 16px 16px;display:flex;gap:6px;z-index:10}
+.bottom button{flex:1;padding:10px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer}
+.bottom .invite{background:var(--card);color:var(--text);border:1px solid var(--border)}
+.bottom .vip{background:linear-gradient(135deg,var(--gold),#FF8C00);color:#000;border:none}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--pink);color:#fff;padding:8px 20px;border-radius:20px;font-size:13px;z-index:999}
+.loading-page{text-align:center;padding:40px;color:var(--dim)}
+.spin{display:inline-block;width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--pink);border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:8px}
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.75);z-index:100;align-items:center;justify-content:center}
 .modal-overlay.show{display:flex}
-.modal{background:#1A1A2E;border-radius:16px;padding:20px;max-width:340px;width:90%;border:1px solid #2A2A45}
-.modal h3{font-size:18px;margin-bottom:8px}
-.modal .sub{font-size:12px;color:#8E8EA0;margin-bottom:16px}
-.modal input,.modal select{width:100%;background:#0A0A1A;border:1px solid #2A2A45;color:#fff;padding:8px 10px;border-radius:8px;margin-bottom:8px;font-size:13px}
-.modal .btn{width:100%;padding:12px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px}
-.modal .btn-primary{background:#FF6B9D;color:#fff;border:none}
-.modal .btn-gold{background:linear-gradient(135deg,#FFD700,#FF8C00);color:#000;border:none}
-.modal .close{position:absolute;top:10px;right:10px;background:none;border:none;color:#fff;font-size:18px;cursor:pointer}
-.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#FF6B9D;color:#fff;padding:8px 20px;border-radius:20px;font-size:13px;z-index:200}
-</style></head>
-<body>
-<div class="header"><div style="display:flex;justify-content:space-between;align-items:center"><h1 style="margin:0">🐋 WhaleBell</h1><button onclick="logout()" style="background:rgba(255,255,255,0.1);border:none;color:#fff;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer">退出</button></div>
-<div style="display:flex;gap:4px;justify-content:center;margin:6px 0"><button onclick="setLang('zh')" id="btnZH" style="background:rgba(255,107,157,0.8);border:none;color:#fff;padding:2px 10px;border-radius:6px;font-size:10px;cursor:pointer">中文</button><button onclick="setLang('en')" id="btnEN" style="background:none;border:1px solid rgba(255,255,255,0.3);color:rgba(255,255,255,0.6);padding:2px 10px;border-radius:6px;font-size:10px;cursor:pointer">EN</button><button onclick="setLang('id')" id="btnID" style="background:none;border:1px solid rgba(255,255,255,0.3);color:rgba(255,255,255,0.6);padding:2px 10px;border-radius:6px;font-size:10px;cursor:pointer">ID</button></div><div class="badge">🎯 化妆间狙击</div><div class="timer" id="timer">30:00</div><div style="font-size:12px;color:#8E8EA0">化妆准备时间</div></div>
-<div class="quota"><span>🎯 今日剩余 <b id="quotaNum">5</b> 个名额</span><button class="btn" onclick="openPay()">💎 升级VIP</button></div>
-<div class="tip">💡 点赞+评论大哥视频，开播后<strong>30%概率</strong>进你直播间</div>
-<div class="section">🎯 今日狙击目标</div>
-<div class="cards" id="list"><div class="loading"><div class="spin"></div><div>正在扫描大哥...</div></div></div>
-<div class="bottom"><button class="invite" onclick="openModal('invite')">👯 邀请+2</button><button style="flex:1;padding:10px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:#16162A;color:#fff;border:1px solid #2A2A45" onclick="openModal('redeem')">🔑 兑换邀请码</button><button class="vip" onclick="openPay()">💎 升级VIP</button></div>
+.modal{background:var(--card);border-radius:var(--radius);padding:20px;max-width:340px;width:90%;border:1px solid var(--border);position:relative}
+.modal h3{font-size:18px;margin-bottom:4px}
+.modal .sub{font-size:12px;color:var(--dim);margin-bottom:16px}
+.modal input,.modal select{width:100%;background:var(--bg);border:1px solid var(--border);color:#fff;padding:10px;border-radius:8px;margin-bottom:8px;font-size:13px;outline:none}
+.modal input:focus,.modal select:focus{border-color:var(--pink)}
+.modal .btn{width:100%;padding:12px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;margin-top:6px}
+.modal .btn-pink{background:var(--pink);color:#fff;border:none}
+.modal .btn-gold{background:linear-gradient(135deg,var(--gold),#FF8C00);color:#000;border:none}
+.modal .close{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--dim);font-size:18px;cursor:pointer}
+.plan-row{display:flex;gap:8px;margin-bottom:12px}
+.plan{flex:1;background:var(--bg);border:2px solid var(--border);border-radius:10px;padding:12px;text-align:center;cursor:pointer}
+.plan.sel{border-color:var(--pink)}
+.plan .price{font-size:22px;font-weight:800}
+.plan .label{font-size:11px;color:var(--dim)}
+.acct-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px}
+.acct-row .cpy{color:var(--pink);cursor:pointer;font-size:16px}
+</style>
+</head><body>
+<div class="header"><button class="logout" onclick="logout()">退出</button><h1>🐋 WhaleBell</h1><div class="badge" id="badge">🎯 化妆间狙击</div><div class="timer" id="timer">30:00</div><div class="timer-sub" id="timerSub">化妆准备时间</div>
+<div class="lang"><button class="active" id="lzh" onclick="setL('zh')">中文</button><button id="len" onclick="setL('en')">EN</button><button id="lid" onclick="setL('id')">ID</button></div></div>
 
-<div class="modal-overlay" id="payModal">
-<div class="modal" style="position:relative"><button class="close" onclick="closePay()">✕</button><h3>💎 开通会员</h3><div class="sub">每天50个精准大哥</div>
-<div style="display:flex;gap:8px;margin-bottom:12px"><div onclick="selPlan('weekly')" id="planW" style="flex:1;background:#16162A;border:2px solid #FF6B9D;border-radius:10px;padding:12px;text-align:center;cursor:pointer"><div style="font-size:22px;font-weight:800">29K</div><div style="font-size:11px;color:#8E8EA0">周卡</div></div><div onclick="selPlan('monthly')" id="planM" style="flex:1;background:#16162A;border:2px solid #2A2A45;border-radius:10px;padding:12px;text-align:center;cursor:pointer"><div style="font-size:22px;font-weight:800">79K</div><div style="font-size:11px;color:#8E8EA0">月卡</div></div></div>
-<div id="payStep1"><button class="btn btn-primary" onclick="showPayStep2()">💳 选择支付方式</button></div>
-<div id="payStep2" style="display:none"><div style="background:#0A0A1A;padding:10px;border-radius:8px;margin-bottom:10px;font-size:12px"><div style="color:#8E8EA0;margin-bottom:6px">📋 转账到以下账户：</div><div id="accts"></div></div>
-<input placeholder="你的名字" id="payName"><select id="payMethod"><option value="">选择转账方式</option><option>GoPay</option><option>Dana</option><option>BCA</option></select>
+<div class="quota"><span>🎯 <span id="quotaLabel">今日剩余</span> <span class="num" id="quotaNum">5</span> <span id="quotaUnit">个狙击名额</span></span><button class="btn" onclick="openPay()">💎 <span id="vipBtn">升级VIP</span></button></div>
+
+<div class="stats"><div class="stat"><div class="v" id="statTotal">-</div><div class="l" id="lblTotal">目标总数</div></div><div class="stat"><div class="v" id="statDone">0</div><div class="l" id="lblDone">已完成</div></div><div class="stat"><div class="v" id="statFree">5</div><div class="l" id="lblFree">免费配额</div></div><div class="stat"><div class="v gold" id="statMax">-</div><div class="l" id="lblMax">最高等级</div></div></div>
+
+<div class="tip">💡 <span id="tipText">点赞+评论大哥视频，开播后30%概率进你直播间！</span></div>
+
+<div class="cats" id="cats">
+<button class="active" onclick="filterCat('')">全部</button>
+<button onclick="filterCat('dance')">💃 热舞</button>
+<button onclick="filterCat('beauty')">✨ 颜值</button>
+<button onclick="filterCat('singer')">🎤 唱歌</button>
+<button onclick="filterCat('comedy')">😂 搞笑</button>
+<button onclick="filterCat('gaming')">🎮 游戏</button>
+<button onclick="filterCat('talk')">💬 聊天</button>
+</div>
+
+<div class="section"><h2 id="secTitle">🎯 今日狙击目标</h2><button class="refresh" id="refreshBtn" onclick="loadWhales()">🔄</button></div>
+<div class="cards" id="list"><div class="loading-page"><div class="spin"></div><div>正在扫描大哥...</div></div></div>
+
+<div class="bottom"><button class="invite" onclick="openModal('invite')">👯 邀请+2</button><button class="invite" onclick="openModal('redeem')">🔑 兑换邀请码</button><button class="vip" onclick="openPay()">💎 升级VIP</button></div>
+
+<!-- Payment Modal -->
+<div class="modal-overlay" id="payModal"><div class="modal">
+<button class="close" onclick="closeModal('pay')">✕</button><h3>💎 开通会员</h3><div class="sub">每天50个精准大哥推荐</div>
+<div class="plan-row"><div class="plan sel" id="planW" onclick="selPlan('weekly')"><div class="price">29K</div><div class="label">周卡</div></div><div class="plan" id="planM" onclick="selPlan('monthly')"><div class="price">79K</div><div class="label">月卡</div></div></div>
+<div id="payStep1"><button class="btn btn-pink" onclick="showPayStep2()">💳 选择支付方式</button></div>
+<div id="payStep2" style="display:none"><div style="background:var(--bg);padding:10px;border-radius:8px;margin-bottom:10px;font-size:12px"><div style="color:var(--dim);margin-bottom:6px">📋 转账到以下账户：</div><div id="accts" style="display:flex;flex-direction:column;gap:4px"></div></div>
+<input id="payName" placeholder="你的名字"><select id="payMethod"><option value="">选择转账方式</option><option>GoPay</option><option>Dana</option><option>BCA</option></select>
 <button class="btn btn-gold" onclick="submitPay()">✅ 我已转账，激活VIP</button></div>
-<div id="payStep3" style="display:none;text-align:center"><div style="font-size:40px">🎉</div><h3>VIP激活成功!</h3><button class="btn btn-primary" onclick="closePay()">开始狙击!</button></div></div></div>
+<div id="payStep3" style="display:none;text-align:center"><div style="font-size:48px">🎉</div><h3>VIP激活成功!</h3><button class="btn btn-pink" onclick="closeModal('pay');loadQuota();loadWhales()">开始狙击!</button></div></div></div>
+
+<!-- Invite Modal -->
+<div class="modal-overlay" id="inviteModal"><div class="modal">
+<button class="close" onclick="closeModal('invite')">✕</button><h3>👯 邀请姐妹解锁</h3><div class="sub">邀请1人各+2名额，邀请2人解锁全部VIP大哥</div>
+<div style="background:var(--bg);padding:14px;border-radius:8px;text-align:center;margin-bottom:12px"><div style="font-size:11px;color:var(--dim)">你的邀请码</div><div style="font-size:28px;font-weight:800;letter-spacing:4px;color:var(--pink)" id="inviteCode">------</div></div>
+<button class="btn btn-pink" onclick="shareInvite()">📤 复制邀请链接发给姐妹</button></div></div>
+
+<!-- Redeem Modal -->
+<div class="modal-overlay" id="redeemModal"><div class="modal">
+<button class="close" onclick="closeModal('redeem')">✕</button><h3>🔑 兑换邀请码</h3><div class="sub">输入姐妹给你的6位邀请码</div>
+<input id="redeemInput" placeholder="输入邀请码" maxlength="6" oninput="this.value=this.value.toUpperCase()" style="text-transform:uppercase;letter-spacing:2px;text-align:center;font-size:20px">
+<button class="btn btn-gold" onclick="doRedeem()">兑换</button></div></div>
 
 <script>
-// Auth guard
 if(!localStorage.getItem('wb_token'))window.location.href='/index.html';
 
+var API='/api',L='zh',plan='weekly',quota={free:5,premium:false},cat='';
 
-// Auth guard - redirect to login if no token
-var AUTH_TOKEN = localStorage.getItem('wb_token');
-var AUTH_USER = JSON.parse(localStorage.getItem('wb_user') || 'null');
-if (!AUTH_TOKEN) { window.location.href = '/index.html'; }
-var API = '/api';
-var plan = 'weekly';
-var lang = 'zh';
-var quota = {free:5,total:5,premium:false};
-
-// i18n
-var T = {
-zh:{badge:'🎯 化妆间狙击',prep:'化妆准备时间',quota:'今日剩余',target:'个狙击名额',vip:'升级VIP',tip:'点赞+评论大哥视频，开播后有30%概率进你直播间！',section:'今日狙击目标',copy:'复制话术',tt:'TikTok',locked:'🔒 已锁定',unlock:'邀请解锁',invite:'邀请+2',redeem:'兑换邀请码'},
-en:{badge:'🎯 Vanity Sniper',prep:'Prep time',quota:'Remaining',target:'targets',vip:'Upgrade VIP',tip:'Like+comment their video, 30% chance they visit!',section:"Today's Targets",copy:'Copy',tt:'TikTok',locked:'🔒 Locked',unlock:'Unlock',invite:'Invite +2',redeem:'Redeem Code'},
-id:{badge:'🎯 Sniper Dandan',prep:'Waktu dandan',quota:'Sisa',target:'target',vip:'VIP',tip:'Like+komen video, 30% kemungkinan mampir!',section:'Target Hari Ini',copy:'Salin',tt:'TikTok',locked:'🔒 Terkunci',unlock:'Buka',invite:'Ajak +2',redeem:'Pakai Kode'}
+var T={
+zh:{badge:'🎯 化妆间狙击',timerSub:'化妆准备时间',quota:'今日剩余',unit:'个狙击名额',vip:'升级VIP',total:'目标总数',done:'已完成',free:'免费配额',max:'最高等级',tip:'点赞+评论大哥视频，开播后30%概率进你直播间！',sec:'🎯 今日狙击目标',copy:'复制话术',tt:'TikTok',locked:'🔒 已锁定',unlock:'邀请解锁',invite:'邀请+2',redeem:'兑换邀请码',all:'全部',refresh:'刷新'},
+en:{badge:'🎯 Vanity Sniper',timerSub:'Prep time',quota:'Remaining',unit:'targets',vip:'VIP',total:'Total',done:'Done',free:'Free',max:'Max LV',tip:'Like+comment, 30% chance they visit!',sec:"🎯 Today's Targets",copy:'Copy',tt:'TikTok',locked:'🔒 Locked',unlock:'Unlock',invite:'Invite +2',redeem:'Redeem',all:'All',refresh:'Refresh'},
+id:{badge:'🎯 Sniper Dandan',timerSub:'Waktu dandan',quota:'Sisa',unit:'target',vip:'VIP',total:'Total',done:'Selesai',free:'Gratis',max:'LV Max',tip:'Like+komen, 30% mampir!',sec:'🎯 Target Hari Ini',copy:'Salin',tt:'TikTok',locked:'🔒 Terkunci',unlock:'Buka',invite:'Ajak +2',redeem:'Kode',all:'Semua',refresh:'Segar'}
 };
-function t(k){return T[lang]?.[k]||T.en[k]||k}
-function setLang(l){lang=l;var b={zh:'btnZH',en:'btnEN',id:'btnID'};['btnZH','btnEN','btnID'].forEach(function(id){var el=document.getElementById(id);if(el){el.style.background=id===b[l]?'rgba(255,107,157,0.8)':'none';el.style.color=id===b[l]?'#fff':'rgba(255,255,255,0.6)'}});updateLang();if(window._targets)renderCards(window._targets)}
-function updateLang(){
-  var el=document.querySelector('.badge');if(el)el.textContent=t('badge');
-  var el2=document.querySelector('.header div:last-child');if(el2)el2.textContent=t('prep');
-  var el3=document.querySelector('.quota span');if(el3)el3.innerHTML='🎯 '+t('quota')+' <b id=quotaNum>'+(quota.premium?'∞':quota.free)+'</b> '+t('target');
-  var el5=document.querySelector('.section');if(el5)el5.textContent='🎯 '+t('section');
-  var el4=document.querySelector('.tip');if(el4)el4.innerHTML='💡 '+t('tip');
-  var btns=document.querySelectorAll('.bottom button');if(btns[0])btns[0].textContent='👯 '+t('invite');if(btns[1])btns[1].textContent='🔑 '+t('redeem');if(btns[2])btns[2].textContent='💎 '+t('vip');
+function t(k){return T[L][k]||T.en[k]||k}
+function setL(l){L=l;['zh','en','id'].forEach(function(x){var el=document.getElementById('l'+x);el.className=x===l?'active':''});applyL();if(window._targets)renderCards(window._targets)}
+function applyL(){
+document.getElementById('badge').textContent=t('badge');document.getElementById('timerSub').textContent=t('timerSub');
+document.getElementById('quotaLabel').textContent='🎯 '+t('quota');document.getElementById('quotaUnit').textContent=t('unit');document.getElementById('vipBtn').textContent=t('vip');
+document.getElementById('lblTotal').textContent=t('total');document.getElementById('lblDone').textContent=t('done');document.getElementById('lblFree').textContent=t('free');document.getElementById('lblMax').textContent=t('max');
+document.getElementById('tipText').textContent=t('tip');document.getElementById('secTitle').textContent=t('sec');
 }
 
-function selPlan(p){plan=p;document.getElementById('planW').style.borderColor=p==='weekly'?'#FF6B9D':'#2A2A45';document.getElementById('planM').style.borderColor=p==='monthly'?'#FF6B9D':'#2A2A45'}
-function openPay(){document.getElementById('payModal').classList.add('show')}
-function closePay(){document.getElementById('payModal').classList.remove('show');document.getElementById('payStep1').style.display='block';document.getElementById('payStep2').style.display='none'}
-function showPayStep2(){document.getElementById('payStep1').style.display='none';document.getElementById('payStep2').style.display='block';loadAccts()}
+function logout(){localStorage.clear();window.location.href='/index.html'}
 function toast(m){var d=document.createElement('div');d.className='toast';d.textContent=m;document.body.appendChild(d);setTimeout(function(){d.remove()},2000)}
-function copyText(t){navigator.clipboard.writeText(t).then(function(){toast('✅ 已复制')})}
-function loadAccts(){fetch(API+'/pay/config').then(function(r){return r.json()}).then(function(d){var el=document.getElementById('accts');el.innerHTML='';if(d.accounts){var ks=Object.keys(d.accounts);for(var i=0;i<ks.length;i++){var a=d.accounts[ks[i]];var div=document.createElement('div');div.style.cssText='padding:6px 0;border-bottom:1px solid #2A2A45;display:flex;justify-content:space-between';div.innerHTML='<span>'+a.icon+' '+a.name+': '+a.number+'</span><span style=color:#FF6B9D;cursor:pointer>📋</span>';div.querySelector('span:last-child').onclick=(function(num){return function(){copyText(num)}})(a.number);el.appendChild(div)}}else{el.innerHTML='暂无收款账户'}}).catch(function(){})}
-async function logout(){localStorage.clear();window.location.href='/index.html'}
-function authFetch(url,opts){opts=opts||{};opts.headers=opts.headers||{};opts.headers['Authorization']='Bearer '+AUTH_TOKEN;opts.headers['x-user-id']=AUTH_USER?AUTH_USER.id:'';return fetch(url,opts)}
-async function submitPay(){var n=document.getElementById('payName').value,m=document.getElementById('payMethod').value;if(!n)return toast('请输入名字');if(!m)return toast('请选择转账方式');try{var o=await(await fetch(API+'/pay/order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:'u_'+Date.now(),plan:plan})})).json();await(await fetch(API+'/pay/upload',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({orderId:o.orderId,paymentMethod:m,senderName:n})})).json();document.getElementById('payStep2').style.display='none';document.getElementById('payStep3').style.display='block';quota.premium=true;quota.free=999;if(window._targets)renderCards(window._targets);try{await fetch(API+'/dist/premium/mock',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:'u_'+Date.now(),plan:plan})})}catch(e){}}catch(e){toast('网络错误')}}
+function openModalInvite(){openModal('invite')}
+function copyText(tx){navigator.clipboard.writeText(tx).then(function(){toast('✅ '+t('copy'))})}
+
+// Category filter
+function filterCat(c){cat=c;document.querySelectorAll('.cats button').forEach(function(b,i){b.className=i===0&&!c?'active':b.textContent.includes(c.replace('dance','热舞').replace('beauty','颜值').replace('singer','唱歌').replace('comedy','搞笑').replace('gaming','游戏').replace('talk','聊天'))?'active':''});loadWhales()}
+
+// Payment
+function openPay(){document.getElementById('payModal').classList.add('show')}
+function closeModal(id){var el=document.getElementById(id+'Modal');if(el)el.classList.remove('show')}
+function openModal(id){var el=document.getElementById(id+'Modal');if(el)el.classList.add('show');if(id==='invite')loadInviteCode()}
+function selPlan(p){plan=p;document.getElementById('planW').className='plan'+(p==='weekly'?' sel':'');document.getElementById('planM').className='plan'+(p==='monthly'?' sel':'')}
+function showPayStep2(){document.getElementById('payStep1').style.display='none';document.getElementById('payStep2').style.display='block';loadAccts()}
+function loadAccts(){
+fetch(API+'/pay/config').then(function(r){return r.json()}).then(function(d){
+var el=document.getElementById('accts');el.innerHTML='';
+if(d.accounts){var ks=Object.keys(d.accounts);for(var i=0;i<ks.length;i++){var a=d.accounts[ks[i]];if(typeof a!=='object'||a.number==='未设置')continue;
+var div=document.createElement('div');div.className='acct-row';
+div.innerHTML='<span>'+a.icon+' '+a.name+': <b>'+a.number+'</b></span><span class=cpy>📋</span>';
+div.querySelector('.cpy').onclick=(function(n){return function(){copyText(n)}})(a.number);
+el.appendChild(div)}}if(!el.innerHTML)el.innerHTML='暂无收款账户'}).catch(function(){})}
+async function submitPay(){
+var n=document.getElementById('payName').value,m=document.getElementById('payMethod').value;
+if(!n)return toast('请输入名字');if(!m)return toast('请选择转账方式');
+try{
+var o=await(await fetch(API+'/pay/order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:'u_'+Date.now(),plan:plan})})).json();
+await(await fetch(API+'/pay/upload',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({orderId:o.orderId,paymentMethod:m,senderName:n})})).json();
+document.getElementById('payStep2').style.display='none';document.getElementById('payStep3').style.display='block';
+quota.premium=true;quota.free=999;renderCards(window._targets||[]);
+await fetch(API+'/dist/premium/mock',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:'u_'+Date.now(),plan:plan})}).catch(function(){})
+}catch(e){toast('网络错误')}
+}
+
+// Invite / Redeem
+function loadInviteCode(){fetch(API+'/dist/referral/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:'u_'+Date.now()})}).then(function(r){return r.json()}).then(function(d){if(d.code){document.getElementById('inviteCode').textContent=d.code;window._inviteCode=d.code}}).catch(function(){})}
+function shareInvite(){var code=window._inviteCode||'------';var text='🔥 用邀请码 '+code+' 注册WhaleBell，双方各得+2大哥名额！ '+window.location.origin;if(navigator.share){navigator.share({title:'WhaleBell',text:text,url:window.location.origin}).catch(function(){})}else{navigator.clipboard.writeText(text).then(function(){toast('✅ 已复制')})};closeModal('invite')}
+function doRedeem(){var code=document.getElementById('redeemInput').value.trim().toUpperCase();if(!code||code.length<4)return toast('请输入邀请码');fetch(API+'/dist/referral/redeem',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:'u_'+Date.now(),code:code})}).then(function(r){return r.json()}).then(function(d){if(d.success){toast('✅ +2名额');closeModal('redeem');loadQuota()}else{toast('❌ '+(d.error||'失败'))}}).catch(function(){toast('❌ 网络错误')})}
+
+// Load whales
+async function loadWhales(){
+var btn=document.getElementById('refreshBtn');btn.classList.add('loading');
+try{
+var url=API+'/sniper/targets?lang='+L+'&limit=10';
+if(cat)url+='&category='+cat;
+var r=await fetch(url);var d=await r.json();
+if(d.success&&d.targets.length){window._targets=d.targets;renderCards(d.targets);
+document.getElementById('statTotal').textContent=d.total;var mx=0;for(var i=0;i<d.targets.length;i++){if(d.targets[i].level>mx)mx=d.targets[i].level}document.getElementById('statMax').textContent='LV'+mx}
+}catch(e){document.getElementById('list').innerHTML='<div class=loading-page>😢 '+e.message+'</div>'}
+btn.classList.remove('loading')
+}
 
 function renderCards(targets){
-  try{
-    var h='';var em={50:'👑',49:'💎',48:'💎',47:'💎',46:'🦁',45:'🦁',44:'🦁',43:'🦁',42:'🐯',41:'🐯',40:'🐯'};
-    for(var i=0;i<targets.length;i++){
-      var w=targets[i];var e=em[w.level]||'⭐';var name=w.nickname||w.username||'?';
-      var region=w.region||'';var tp=w.templateType||'';var comment=w.comment||'';
-      var locked=!quota.premium&&i>=quota.free;
-      if(locked){h+='<div class=card style=opacity:0.4><div class=av>🔒</div><div class=info><div class=name>'+t('locked')+'</div><div class=meta>'+t('unlock')+' - 邀请好友升级VIP解锁</div></div></div>';continue}
-      h+='<div class=card><div class=av>'+e+'</div><div class=info><div class=name>'+name+'<span class=lv>LV'+w.level+'</span></div><div class=meta>@'+w.username+' | '+region+' | '+tp+'</div><div class=comment>" '+comment.substring(0,70)+'..."</div><div class=btns><button class=btn-copy id=cb'+i+'>📋 '+t('copy')+'</button><a class=btn-tt href=https://www.tiktok.com/@'+w.username+' target=_blank>🔗 '+t('tt')+'</a></div></div></div>';
-    }
-    document.getElementById('list').innerHTML=h||'<div class=loading>😢 暂无数据</div>';
-    for(var j=0;j<targets.length;j++){(function(idx,w){var btn=document.getElementById('cb'+idx);if(btn)btn.onclick=function(){copyText(w.comment||'')}})(j,targets[j])}
-  }catch(e){document.getElementById('list').innerHTML='<div class=loading>❌ '+e.message+'</div>'}
+var h='';var em={50:'👑',49:'💎',48:'💎',47:'💎',46:'🦁',45:'🦁',44:'🦁',43:'🦁',42:'🐯',41:'🐯',40:'🐯'};
+for(var i=0;i<targets.length;i++){
+var w=targets[i],e=em[w.level]||'⭐',locked=!quota.premium&&i>=quota.free;
+var name=w.nickname||w.username||'?',region=w.region||'',tp=w.templateType||'';
+var tags=(w.tags||[]).slice(0,3),coins=w.totalCoins||0;
+if(locked){h+='<div class="card locked"><div class="lock-overlay" onclick="openModalInvite()"><div style="font-size:32px">🔒</div><div style="font-size:14px;font-weight:700;margin:4px 0">'+t('locked')+'</div><div style="font-size:11px;color:var(--dim)">'+t('unlock')+'</div></div><div class="row"><div class="av">🔒</div><div class="info"><div class="name">'+t('locked')+'</div><div class="uname">-----</div></div></div></div>';continue}
+h+='<div class="card'+(w.isPremium?' premium':'')+'"><div class="row"><div class="av">'+e+'</div><div class="info"><div class="name">'+name+'<span class="lv">LV'+w.level+'</span></div><div class="uname">@'+w.username+'</div><div class="tags">'+tags.map(function(tg){return '<span class="tag">'+tg+'</span>'}).join('')+(w.persona?'<span class="tag persona">'+w.persona+'</span>':'')+'<span class="tag" style="background:rgba(255,215,0,0.12);color:#FFD700">'+tp+'</span></div><div class="meta"><span>📍 '+region+'</span><span>💰 '+(coins>0?(coins>=1000?(coins/1000).toFixed(1)+'K':coins):'N/A')+'</span><span>🟢 Online</span></div><div class="comment">" '+(w.comment||'').substring(0,80)+'..."</div><div class="btns"><button class="btn-copy" id="cb'+i+'">📋 '+t('copy')+'</button><a class="btn-tt" onclick="openTT(this)" data-user="'+w.username+'" href="#">📱 '+t('tt')+'</a></div></div></div></div>'
+}
+document.getElementById('list').innerHTML=h||'<div class=loading-page>😢 '+t('nodata')+'</div>';
+for(var j=0;j<targets.length;j++){(function(idx,t){var btn=document.getElementById('cb'+idx);if(btn)btn.onclick=function(){copyText(t.comment||'')}})(j,targets[j])}
 }
 
-async function loadWhales(){
-  try{var r=await fetch(API+'/sniper/targets?lang='+lang+'&limit=10&random=1');var d=await r.json();
-  if(d.success&&d.targets.length){window._targets=d.targets;renderCards(d.targets)}}
-  catch(e){document.getElementById('list').innerHTML='<div class=loading>😢 加载失败</div>'}
-  updateLang();
-}
+function openTT(el){var u=el.getAttribute('data-user');window.open('tiktok://user/'+u,'_self');setTimeout(function(){window.open('https://www.tiktok.com/@'+u,'_blank')},800)}
 
-// Try loading quota from API
-function loadQuota(){fetch(API+'/dist/quota?userId=u_test').then(function(r){return r.json()}).then(function(d){quota=d;quota.free=d.freeQuota||5;quota.premium=d.isPremium||false;document.getElementById('quotaNum').textContent=quota.premium?'∞':quota.free;if(window._targets)renderCards(window._targets)}).catch(function(){})}
+function loadQuota(){fetch(API+'/dist/quota?userId=u_test').then(function(r){return r.json()}).then(function(d){quota=d;quota.free=d.freeQuota||5;quota.premium=d.isPremium||false;document.getElementById('quotaNum').textContent=quota.premium?'∞':quota.free;document.getElementById('statFree').textContent=quota.free;if(window._targets)renderCards(window._targets)}).catch(function(){})}
 
+// Timer
 var sec=1800;setInterval(function(){if(sec>0)sec--;var m=Math.floor(sec/60),s=sec%60;document.getElementById('timer').textContent=('0'+m).slice(-2)+':'+('0'+s).slice(-2)},1000);
 
-loadWhales();loadQuota();
-
-function openModal(type){var map={invite:'inviteModal',redeem:'redeemModal'};var el=document.getElementById(map[type]||type);if(el)el.classList.add('show');if(type==='invite')loadInviteCode()}
-function closeModal(type){var map={invite:'inviteModal',redeem:'redeemModal'};var el=document.getElementById(map[type]||type);if(el)el.classList.remove('show')}
-function loadInviteCode(){fetch(API+'/dist/referral/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:'u_'+Date.now()})}).then(function(r){return r.json()}).then(function(d){if(d.code){document.getElementById('inviteCode').textContent=d.code;window._inviteCode=d.code}}).catch(function(){})}
-function shareInvite(){var code=window._inviteCode||'------';var text='🔥 用我的邀请码 '+code+' 注册WhaleBell，双方各得+2大哥名额！ '+window.location.href;if(navigator.share){navigator.share({title:'WhaleBell',text:text,url:window.location.href}).catch(function(){})}else{navigator.clipboard.writeText(text).then(function(){toast('✅ 已复制！发给姐妹吧')})};closeModal('invite')}
-function doRedeem(){var code=document.getElementById('redeemInput').value.trim().toUpperCase();if(!code||code.length<4)return toast('请输入完整邀请码');fetch(API+'/dist/referral/redeem',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:'u_'+Date.now(),code:code})}).then(function(r){return r.json()}).then(function(d){if(d.success){toast('✅ 兑换成功！+2名额');closeModal('redeem');loadQuota();if(window._targets)renderCards(window._targets)}else{toast('❌ '+(d.error||'兑换失败'))}}).catch(function(){toast('❌ 网络错误')})}
-
+applyL();loadWhales();loadQuota();
 </script>
-
-<div class="modal-overlay" id="inviteModal">
-<div class="modal" style="position:relative">
-<button class="close" onclick="closeModal('invite')" style="position:absolute;top:8px;right:10px;background:none;border:none;color:#fff;font-size:18px;cursor:pointer">✕</button>
-<h3>👯 邀请姐妹解锁</h3>
-<div class="sub">邀请1个姐妹，双方各+2名额！<br>邀请2个，直接解锁全部VIP大哥！</div>
-<div style="background:#0A0A1A;padding:14px;border-radius:8px;text-align:center;margin-bottom:12px">
-<div style="font-size:11px;color:#8E8EA0">你的邀请码</div>
-<div id="inviteCode" style="font-size:28px;font-weight:800;letter-spacing:4px;color:#FF6B9D">------</div>
-</div>
-<button class="btn btn-primary" onclick="shareInvite()" style="width:100%">📤 复制邀请链接发给姐妹</button>
-</div></div>
-
-<div class="modal-overlay" id="redeemModal">
-<div class="modal" style="position:relative">
-<button class="close" onclick="closeModal('redeem')" style="position:absolute;top:8px;right:10px;background:none;border:none;color:#fff;font-size:18px;cursor:pointer">✕</button>
-<h3>🔑 兑换邀请码</h3>
-<div class="sub">输入姐妹给你的6位邀请码</div>
-<input id="redeemInput" placeholder="输入邀请码" maxlength="6" style="width:100%;background:#0A0A1A;border:1px solid #2A2A45;color:#fff;padding:10px;border-radius:8px;font-size:16px;text-transform:uppercase;letter-spacing:2px;text-align:center" oninput="this.value=this.value.toUpperCase()">
-<button class="btn btn-gold" onclick="doRedeem()" style="width:100%;margin-top:8px">兑换</button>
-</div></div>
 </body></html>
