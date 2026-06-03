@@ -682,7 +682,7 @@
   <!-- Header -->
   <div class="header">
     <div class="header-top">
-      <div class="header-title">🐋 WhaleBell <span style="font-size:10px;opacity:0.6;">v2026.06.03</span></div>
+      <div class="header-title">🐋 WhaleBell</div>
       <div class="header-badge">🎯 化妆间狙击</div>
     <div style="display:flex;gap:4px;position:relative;z-index:1;">
       <button class="lang-btn" style="background:none;border:1px solid rgba(255,255,255,0.3);color:rgba(255,255,255,0.6);padding:2px 8px;border-radius:6px;font-size:10px;cursor:pointer;" onclick="setLang('zh')">中文</button>
@@ -1117,6 +1117,8 @@ function goPremium() {
   setTimeout(() => payWithLemon(plan), 500);
 }
 
+      showToast('💎 会员功能开发中，敬请期待！');
+    }
 
     // ============================================================
     // Toast
@@ -1700,7 +1702,27 @@ const _origInit = (async function init() {
         `;
       }
     })();
-  </script>
+  
+
+// ===== FAILSAFE: load data regardless of init =====
+setTimeout(function() {
+  if (!window._targets || window._targets.length === 0) {
+    console.log('Failsafe: loading targets...');
+    fetch('/api/sniper/targets').then(function(r){return r.json()}).then(function(d){
+      if (d.success && d.targets.length) {
+        window._targets = d.targets;
+        if (typeof renderTargets === 'function') {
+          renderTargets(d.targets);
+          document.getElementById('statTargets').textContent = d.targets.length;
+          var maxLv = 0;
+          for (var i=0;i<d.targets.length;i++) { if (d.targets[i].level > maxLv) maxLv = d.targets[i].level; }
+          document.getElementById('statLevels').textContent = 'LV' + maxLv;
+        }
+      }
+    });
+  }
+}, 2000);
+</script>
 
   <!-- ============================================
        Share Modal
