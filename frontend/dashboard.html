@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>WhaleBell 鲸铃 — 直播助手</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <style>
+    .room-status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+    }
+    .whale-feed {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 0 80px;
+    }
+    .alert-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      z-index: 999;
+    }
+    .alert-popup {
+      position: fixed;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #1A1A3E, #2A1A4E);
+      border: 2px solid var(--primary);
+      border-radius: 16px;
+      padding: 20px;
+      min-width: 280px;
+      max-width: 360px;
+      box-shadow: 0 8px 40px rgba(108,92,231,0.3);
+      animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      pointer-events: all;
+      z-index: 1000;
+      text-align: center;
+    }
+    @keyframes popIn {
+      from { transform: translateX(-50%) scale(0.5); opacity: 0; }
+      to { transform: translateX(-50%) scale(1); opacity: 1; }
+    }
+    .alert-popup .whale-icon {
+      font-size: 48px;
+      margin-bottom: 8px;
+    }
+    .alert-popup .alert-name {
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .alert-popup .alert-level {
+      display: inline-block;
+      background: linear-gradient(135deg, #FDCB6E, #E17055);
+      color: #000;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 3px 12px;
+      border-radius: 12px;
+      margin-top: 4px;
+    }
+    .alert-popup .alert-gift {
+      margin-top: 8px;
+      color: var(--accent);
+      font-size: 14px;
+    }
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--bg-card);
+      border-top: 1px solid var(--border);
+      padding: 8px 16px 16px;
+      z-index: 100;
+    }
+    .room-input-group {
+      display: flex;
+      gap: 8px;
+    }
+    .room-input-group .form-input {
+      flex: 1;
+    }
+    .top-whales-list {
+      padding: 8px 16px;
+    }
+    .top-whale-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: var(--bg-card);
+      border-radius: var(--radius-sm);
+      margin-bottom: 6px;
+      border: 1px solid var(--border);
+    }
+    .top-whale-item .rank {
+      width: 24px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-dim);
+    }
+    .top-whale-item .rank.gold { color: #FDCB6E; }
+    .top-whale-item .rank.silver { color: #B0B0C0; }
+    .top-whale-item .rank.bronze { color: #E17055; }
+    .whale-search {
+      padding: 8px 16px;
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    /* Sound toggle */
+    .sound-toggle {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 20px;
+      cursor: pointer;
+      padding: 4px;
+    }
+    .sound-toggle.active {
+      color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <div class="app-header">
+      <h1>
+        🐋 WhaleBell
+        <span class="live-indicator" style="margin-left:auto;font-size:12px;">
+          <span class="live-dot" id="statusDot"></span>
+          <span id="statusText">未连接</span>
+        </span>
+      </h1>
+      <div class="subtitle">直播高等级观众实时提醒系统</div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="live">🔔 实时</button>
+      <button class="tab" data-tab="ranking">🏆 排行</button>
+      <button class="tab" data-tab="settings">⚙️ 设置</button>
+    </div>
+
+    <!-- Tab: Live Feed -->
+    <div class="tab-content active" id="tab-live">
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card">
+          <div class="stat-value" id="statTotal">0</div>
+          <div class="stat-label">今日金主</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statMaxLevel">-</div>
+          <div class="stat-label">最高等级</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statHighLevel">0</div>
+          <div class="stat-label">≥30级</div>
+        </div>
+      </div>
+
+      <div class="whale-feed" id="whaleFeed">
+        <div class="empty-state">
+          <div class="emoji">🔍</div>
+          <p>输入直播间名称，开始监控</p>
+          <p style="font-size:12px;margin-top:8px;color:var(--text-dim);">
+            高等级观众进场时会在这里显示
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Ranking -->
+    <div class="tab-content" id="tab-ranking">
+      <div class="whale-search">
+        <input type="text" class="form-input" placeholder="搜索金主..." id="searchWhale">
+      </div>
+      <div class="top-whales-list" id="rankingList">
+        <div class="empty-state">
+          <div class="emoji">🏆</div>
+          <p>还没有金主数据</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Settings -->
+    <div class="tab-content" id="tab-settings">
+      <div style="padding:16px;">
+        <div class="card" style="margin-bottom:12px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div style="font-weight:600;">🔊 声音提醒</div>
+              <div style="font-size:12px;color:var(--text-muted);">高等级观众进场时播放提示音</div>
+            </div>
+            <label style="position:relative;display:inline-block;width:44px;height:24px;">
+              <input type="checkbox" id="soundToggle" checked style="opacity:0;width:0;height:0;">
+              <span style="position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:var(--border);border-radius:12px;transition:0.3s;"
+                    id="soundSlider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:12px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div style="font-weight:600;">🎯 最低等级提醒</div>
+              <div style="font-size:12px;color:var(--text-muted);">低于此等级的观众不提醒</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <button class="btn btn-sm btn-secondary" id="levelDown">-</button>
+              <span style="font-size:18px;font-weight:700;min-width:32px;text-align:center;" id="thresholdDisplay">1</span>
+              <button class="btn btn-sm btn-secondary" id="levelUp">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:12px;">
+          <div>
+            <div style="font-weight:600;margin-bottom:8px;">📡 当前监控</div>
+            <div id="currentRoomDisplay" style="color:var(--text-muted);font-size:13px;">未监控任何直播间</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom bar: Room input -->
+    <div class="bottom-bar">
+      <div class="room-input-group">
+        <input type="text" class="form-input" id="roomInput" 
+               placeholder="输入TikTok直播间用户名..." 
+               autocomplete="off">
+        <button class="btn btn-primary" id="connectBtn">▶ 监控</button>
+      </div>
+    </div>
+
+    <!-- Alert popup overlay -->
+    <div class="alert-overlay" id="alertOverlay"></div>
+  </div>
+
+  <!-- Audio for alert sound -->
+  <audio id="alertSound" preload="auto" style="display:none;"></audio>
+
+  <script>
+    // ============================================================
+    // WhaleBell - Main Dashboard
+    // ============================================================
+    const API = window.location.origin + '/api';
+    const WS_URL = window.location.origin.replace(/^http/, 'ws');
+    
+    let userId = null;
+    let session = null;
+    let ws = null;
+    let currentRoom = '';
+    let isMonitoring = false;
+    let soundEnabled = true;
+    let levelThreshold = 1;
+    let alertHistory = [];
+
+    // ============================================================
+    // Auth check
+    // ============================================================
+    (function init() {
+      const sessData = localStorage.getItem('whalebell_session');
+      const userData = localStorage.getItem('whalebell_user');
+      if (!sessData || !userData) {
+        window.location.href = '/';
+        return;
+      }
+      session = JSON.parse(sessData);
+      const user = JSON.parse(userData);
+      userId = user.id;
+      
+      // Connect WebSocket
+      connectWebSocket();
+      
+      // Load initial data
+      loadStats();
+      loadHistory();
+      
+      // Load settings
+      soundEnabled = localStorage.getItem('whalebell_sound') !== 'false';
+      levelThreshold = parseInt(localStorage.getItem('whalebell_threshold')) || 1;
+      document.getElementById('soundToggle').checked = soundEnabled;
+      document.getElementById('thresholdDisplay').textContent = levelThreshold;
+    })();
+
+    // ============================================================
+    // WebSocket
+    // ============================================================
+    function connectWebSocket() {
+      try {
+        ws = new WebSocket(WS_URL);
+        
+        ws.onopen = () => {
+          setStatus('connected');
+          ws.send(JSON.stringify({ type: 'auth', userId }));
+        };
+        
+        ws.onmessage = (e) => {
+          try {
+            const msg = JSON.parse(e.data);
+            if (msg.type === 'whale_alert') {
+              showWhaleAlert(msg.data);
+            }
+          } catch (err) {}
+        };
+        
+        ws.onclose = () => {
+          setStatus('disconnected');
+          setTimeout(connectWebSocket, 3000);
+        };
+        
+        ws.onerror = () => {
+          setStatus('error');
+        };
+      } catch (err) {
+        setStatus('error');
+      }
+    }
+
+    function setStatus(status) {
+      const dot = document.getElementById('statusDot');
+      const text = document.getElementById('statusText');
+      
+      const states = {
+        connected: { color: '#00B894', text: '已连接' },
+        disconnected: { color: '#E17055', text: '未连接' },
+        error: { color: '#E17055', text: '连接失败' },
+        monitoring: { color: '#00B894', text: '监控中' }
+      };
+      
+      const s = states[status] || states.disconnected;
+      dot.style.background = s.color;
+      text.textContent = s.text;
+    }
+
+    // ============================================================
+    // Whale Alert
+    // ============================================================
+    function showWhaleAlert(data) {
+      // Add to feed
+      addToFeed(data);
+      
+      // Show popup overlay
+      showPopup(data);
+      
+      // Play sound
+      if (soundEnabled) playAlertSound(data.level);
+      
+      // Refresh stats
+      loadStats();
+    }
+
+    function addToFeed(data) {
+      const feed = document.getElementById('whaleFeed');
+      const empty = feed.querySelector('.empty-state');
+      if (empty) empty.style.display = 'none';
+      
+      const levelClass = data.level >= 50 ? 'royalty-level-50' : 
+                        data.level >= 40 ? 'royalty-level-40' :
+                        data.level >= 30 ? 'royalty-level-30' : '';
+      
+      const card = document.createElement('div');
+      card.className = 'whale-alert';
+      
+      const time = new Date().toLocaleTimeString();
+      
+      card.innerHTML = `
+        <div class="whale-header">
+          <div class="whale-avatar">👑</div>
+          <div>
+            <div class="whale-name ${levelClass}">
+              ${escapeHtml(data.nickname || data.username)}
+              <span class="whale-level">LV${data.level}</span>
+            </div>
+            <div style="font-size:11px;color:var(--text-muted);">${data.username}</div>
+          </div>
+          <div style="margin-left:auto;font-size:11px;color:var(--text-dim);">${time}</div>
+        </div>
+        <div class="whale-details">
+          ${data.gift_name ? `<span>🎁 ${data.gift_name} x${data.gift_count}</span>` : ''}
+          ${data.total_gifts > 0 ? `<span>💰 ${data.total_gifts} 钻石</span>` : ''}
+          ${data.room_title ? `<span>📺 ${escapeHtml(data.room_title)}</span>` : ''}
+        </div>
+      `;
+      
+      feed.insertBefore(card, feed.firstChild);
+      
+      // Keep max 50 alerts
+      while (feed.children.length > 50) {
+        feed.removeChild(feed.lastChild);
+      }
+      
+      // Add to history
+      alertHistory.unshift(data);
+      if (alertHistory.length > 200) alertHistory.pop();
+    }
+
+    function showPopup(data) {
+      const overlay = document.getElementById('alertOverlay');
+      
+      const levelLabel = data.level >= 50 ? '💎 至尊大哥' :
+                         data.level >= 40 ? '👑 超级大哥' :
+                         data.level >= 30 ? '⭐ 大哥' : '🔔 观众';
+      
+      const popup = document.createElement('div');
+      popup.className = 'alert-popup';
+      popup.innerHTML = `
+        <div class="whale-icon">🐋</div>
+        <div style="font-size:12px;color:var(--primary);margin-bottom:4px;">${levelLabel}进场！</div>
+        <div class="alert-name">${escapeHtml(data.nickname || data.username)}</div>
+        <div class="alert-level">LV${data.level}</div>
+        ${data.gift_name ? `<div class="alert-gift">🎁 送了 ${escapeHtml(data.gift_name)} x${data.gift_count}</div>` : ''}
+        ${data.total_gifts > 0 ? `<div style="font-size:12px;color:var(--text-muted);margin-top:4px;">💰 累计送礼 ${data.total_gifts} 钻石</div>` : ''}
+      `;
+      
+      overlay.appendChild(popup);
+      
+      // Auto remove after 4 seconds
+      setTimeout(() => {
+        if (popup.parentNode === overlay) {
+          popup.style.animation = 'slideIn 0.3s reverse';
+          setTimeout(() => popup.remove(), 300);
+        }
+      }, 4000);
+      
+      // Remove old popups
+      while (overlay.children.length > 3) {
+        overlay.firstChild.remove();
+      }
+    }
+
+    // ============================================================
+    // Alert Sound
+    // ============================================================
+    function playAlertSound(level) {
+      // Generate different tones based on level
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      
+      // Higher level = higher pitch
+      const baseFreq = 400 + (level || 1) * 8;
+      osc.frequency.setValueAtTime(baseFreq, ctx.currentTime);
+      osc.type = 'sine';
+      
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+      
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.3);
+      
+      // Second note for high levels
+      if (level >= 30) {
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.frequency.setValueAtTime(baseFreq * 1.25, ctx.currentTime + 0.15);
+        osc2.type = 'sine';
+        gain2.gain.setValueAtTime(0.2, ctx.currentTime + 0.15);
+        gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+        osc2.start(ctx.currentTime + 0.15);
+        osc2.stop(ctx.currentTime + 0.4);
+      }
+    }
+
+    // ============================================================
+    // API calls
+    // ============================================================
+    async function loadStats() {
+      try {
+        const res = await fetch(`${API}/whales/stats?userId=${userId}`);
+        if (!res.ok) return;
+        const stats = await res.json();
+        
+        document.getElementById('statTotal').textContent = stats.today_new || 0;
+        document.getElementById('statMaxLevel').textContent = stats.max_level ? `LV${stats.max_level}` : '-';
+        document.getElementById('statHighLevel').textContent = stats.high_level_count || 0;
+      } catch (err) {}
+    }
+
+    async function loadHistory() {
+      try {
+        const res = await fetch(`${API}/whales?userId=${userId}&limit=20`);
+        if (!res.ok) return;
+        const { data } = await res.json();
+        
+        if (data && data.length > 0) {
+          const feed = document.getElementById('whaleFeed');
+          const empty = feed.querySelector('.empty-state');
+          if (empty) empty.style.display = 'none';
+          
+          data.forEach(alert => addToFeed(alert));
+          loadRanking();
+        }
+      } catch (err) {}
+    }
+
+    async function loadRanking() {
+      try {
+        const res = await fetch(`${API}/whales/stats?userId=${userId}`);
+        if (!res.ok) return;
+        const stats = await res.json();
+        
+        const list = document.getElementById('rankingList');
+        const empty = list.querySelector('.empty-state');
+        
+        if (stats.top_whales && stats.top_whales.length > 0) {
+          if (empty) empty.style.display = 'none';
+          list.innerHTML = '';
+          
+          stats.top_whales.forEach((w, i) => {
+            const rankClass = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+            const medals = ['🥇', '🥈', '🥉'];
+            const rankDisplay = i < 3 ? medals[i] : `#${i + 1}`;
+            
+            const item = document.createElement('div');
+            item.className = 'top-whale-item';
+            item.innerHTML = `
+              <div class="rank ${rankClass}">${rankDisplay}</div>
+              <div style="flex:1;padding:0 8px;">
+                <div style="font-weight:600;">${escapeHtml(w.username)}</div>
+                <div style="font-size:11px;color:var(--text-muted);">出现 ${w.count} 次</div>
+              </div>
+              <div style="text-align:right;">
+                <div class="whale-level">LV${w.level}</div>
+                <div style="font-size:11px;color:var(--accent);">💰${w.total_gifts}</div>
+              </div>
+            `;
+            list.appendChild(item);
+          });
+        }
+      } catch (err) {}
+    }
+
+    // ============================================================
+    // Connect / Disconnect room
+    // ============================================================
+    document.getElementById('connectBtn').addEventListener('click', async () => {
+      const roomInput = document.getElementById('roomInput');
+      const roomId = roomInput.value.trim();
+      
+      if (!roomId) return;
+      
+      if (isMonitoring) {
+        // Stop monitoring
+        try {
+          await fetch(`${API}/monitor/stop`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ roomId: currentRoom }),
+            signal: AbortSignal.timeout(5000)
+          });
+        } catch(_) {}
+        
+        isMonitoring = false;
+        currentRoom = '';
+        document.getElementById('connectBtn').textContent = '▶ 监控';
+        document.getElementById('roomInput').disabled = false;
+        document.getElementById('statusText').textContent = '已停止';
+        document.getElementById('currentRoomDisplay').textContent = '未监控任何直播间';
+        return;
+      }
+      
+      // Start monitoring
+      document.getElementById('connectBtn').disabled = true;
+      document.getElementById('connectBtn').textContent = '连接中...';
+      
+      try {
+        // Add 15s timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+        
+        const res = await fetch(`${API}/monitor/start`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, roomId }),
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        const result = await res.json();
+        
+        if (result.success) {
+          isMonitoring = true;
+          currentRoom = roomId;
+          document.getElementById('connectBtn').textContent = '⏹ 停止';
+          document.getElementById('connectBtn').className = 'btn btn-danger';
+          document.getElementById('roomInput').disabled = true;
+          document.getElementById('statusText').textContent = '监控中';
+          document.getElementById('currentRoomDisplay').textContent = `🎯 ${roomId}`;
+          setStatus('monitoring');
+          
+          // Show toast
+          showToast(`✅ 开始监控 ${roomId}`);
+          
+          // Clear empty state
+          const feed = document.getElementById('whaleFeed');
+          const empty = feed.querySelector('.empty-state');
+          if (empty) empty.style.display = 'none';
+        } else {
+          showToast(`❌ ${result.error || '连接失败'}`);
+        }
+      } catch (err) {
+        const msg = err.name === 'AbortError' ? '⏱️ 连接超时，请检查直播间是否在线' : '❌ 网络错误';
+        showToast(msg);
+      }
+      
+      document.getElementById('connectBtn').disabled = false;
+    });
+
+    // ============================================================
+    // Tab switching
+    // ============================================================
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+        
+        tab.classList.add('active');
+        document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+        
+        if (tab.dataset.tab === 'ranking') loadRanking();
+      });
+    });
+
+    // ============================================================
+    // Settings
+    // ============================================================
+    document.getElementById('soundToggle').addEventListener('change', (e) => {
+      soundEnabled = e.target.checked;
+      localStorage.setItem('whalebell_sound', soundEnabled);
+    });
+
+    document.getElementById('levelDown').addEventListener('click', () => {
+      if (levelThreshold > 1) {
+        levelThreshold--;
+        document.getElementById('thresholdDisplay').textContent = levelThreshold;
+        localStorage.setItem('whalebell_threshold', levelThreshold);
+      }
+    });
+
+    document.getElementById('levelUp').addEventListener('click', () => {
+      if (levelThreshold < 50) {
+        levelThreshold++;
+        document.getElementById('thresholdDisplay').textContent = levelThreshold;
+        localStorage.setItem('whalebell_threshold', levelThreshold);
+      }
+    });
+
+    // ============================================================
+    // Search
+    // ============================================================
+    document.getElementById('searchWhale').addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase();
+      document.querySelectorAll('.top-whale-item').forEach(item => {
+        const name = item.querySelector('[style*="font-weight:600"]')?.textContent?.toLowerCase() || '';
+        item.style.display = name.includes(q) ? '' : 'none';
+      });
+    });
+
+    // ============================================================
+    // Utils
+    // ============================================================
+    function escapeHtml(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function showToast(msg) {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = msg;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+  </script>
+</body>
+</html>
