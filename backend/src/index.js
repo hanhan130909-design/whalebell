@@ -1,4 +1,15 @@
 /**
+// Crash handler for Railway debugging
+process.on('uncaughtException', (err) => {
+  console.error('FATAL:', err.message);
+  console.error(err.stack);
+  process.exit(1);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('UNHANDLED REJECTION:', reason);
+});
+
+
  * WhaleBell Backend Server
  * TikTok主播实时高等级观众提醒系统
  */
