@@ -1,43 +1,69 @@
 <!DOCTYPE html>
-<html lang="zh"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>WhaleBell 登录</title>
+<html lang="zh"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>WhaleBell</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:Arial,sans-serif;background:#0A0A1A;color:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh}
-.box{width:320px;padding:24px}
+.box{width:340px;padding:24px}
 h1{font-size:28px;text-align:center;margin-bottom:4px;background:linear-gradient(135deg,#FF6B9D,#FFD700);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .sub{text-align:center;color:#8E8EA0;font-size:13px;margin-bottom:24px}
-input{width:100%;background:#16162A;border:1px solid #2A2A45;color:#fff;padding:10px 12px;border-radius:8px;margin-bottom:10px;font-size:14px}
-button{width:100%;padding:12px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;border:none}
-.btn-login{background:linear-gradient(135deg,#FF6B9D,#7C5CFC);color:#fff;margin-top:8px}
-.toggle{text-align:center;margin-top:12px;font-size:12px;color:#8E8EA0}
-.toggle a{color:#FF6B9D;cursor:pointer}
-.error{background:rgba(255,0,0,0.15);color:#ff6b6b;padding:8px;border-radius:6px;font-size:12px;margin-bottom:10px;display:none}
+.lang{display:flex;gap:6px;justify-content:center;margin-bottom:16px}
+.lang button{background:#16162A;border:1px solid #2A2A45;color:#8E8EA0;padding:4px 14px;border-radius:6px;font-size:11px;cursor:pointer}
+.lang button.active{background:rgba(255,107,157,0.15);border-color:#FF6B9D;color:#FF6B9D}
+input{width:100%;background:#16162A;border:1px solid #2A2A45;color:#fff;padding:10px 12px;border-radius:8px;margin-bottom:10px;font-size:14px;outline:none}
+input:focus{border-color:#FF6B9D}
+button.submit{width:100%;padding:12px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;border:none;margin-top:8px;background:linear-gradient(135deg,#FF6B9D,#7C5CFC);color:#fff}
+.toggle{text-align:center;margin-top:14px;font-size:12px;color:#8E8EA0}
+.toggle a{color:#FF6B9D;cursor:pointer;text-decoration:none}
+.error{background:rgba(255,0,0,0.12);color:#ff6b6b;padding:8px 12px;border-radius:6px;font-size:12px;margin-bottom:10px;display:none}
 </style></head><body>
 <div class="box">
 <h1>🐋 WhaleBell</h1>
-<div class="sub">开播前狙击大哥，锁定你的流水</div>
+<div class="sub" id="slogan">开播前狙击大哥，锁定你的流水</div>
+<div class="lang">
+<button id="lzh" class="active" onclick="setL('zh')">中文</button>
+<button id="len" onclick="setL('en')">EN</button>
+<button id="lid" onclick="setL('id')">ID</button>
+</div>
 <div class="error" id="err"></div>
 <input id="email" type="email" placeholder="邮箱">
 <input id="name" placeholder="昵称" style="display:none">
 <input id="pass" type="password" placeholder="密码">
-<button class="btn-login" id="btn" onclick="submit()">登录</button>
-<div class="toggle"><span id="toggleText">还没有账号？</span> <a id="toggleBtn" onclick="toggle()">注册</a></div>
+<button class="submit" id="btn" onclick="submit()">登录</button>
+<div class="toggle"><span id="togText">还没有账号？</span> <a id="togBtn" onclick="toggle()">注册</a></div>
 </div>
 <script>
-var isLogin=true,API='/api';
-function toggle(){isLogin=!isLogin;document.getElementById('name').style.display=isLogin?'none':'block';document.getElementById('btn').textContent=isLogin?'登录':'注册';document.getElementById('toggleText').textContent=isLogin?'还没有账号？':'已有账号？';document.getElementById('toggleBtn').textContent=isLogin?'注册':'登录';document.getElementById('err').style.display='none'}
-async function submit(){
-  var e=document.getElementById('email').value,p=document.getElementById('pass').value,n=document.getElementById('name').value;
-  if(!e||!p)return showErr('请填写邮箱和密码');
-  try{
-    var u=isLogin?API+'/auth/login':API+'/auth/register';
-    var body=isLogin?{email:e,password:p}:{email:e,password:p,displayName:n||e.split('@')[0]};
-    var r=await fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    var d=await r.json();
-    if(d.session){localStorage.setItem('wb_token',d.session.access_token);localStorage.setItem('wb_user',JSON.stringify(d.user));window.location.href='/sniper.html'}
-    else showErr(d.error||'登录失败')
-  }catch(x){showErr('网络错误')}
+var L='zh',isLogin=true,API='/api';
+var T={
+zh:{slogan:'开播前狙击大哥，锁定你的流水',email:'邮箱',name:'昵称',pass:'密码',login:'登录',reg:'注册',noAcc:'还没有账号？',hasAcc:'已有账号？',swReg:'注册',swLogin:'登录',errEmail:'请填写邮箱和密码',errNet:'网络错误'},
+en:{slogan:'Snipe whales before streaming',email:'Email',name:'Nickname',pass:'Password',login:'Login',reg:'Register',noAcc:"Don't have an account?",hasAcc:'Already have an account?',swReg:'Register',swLogin:'Login',errEmail:'Please fill email and password',errNet:'Network error'},
+id:{slogan:'Snipe bos sebelum live',email:'Email',name:'Nama',pass:'Kata sandi',login:'Masuk',reg:'Daftar',noAcc:'Belum punya akun?',hasAcc:'Sudah punya akun?',swReg:'Daftar',swLogin:'Masuk',errEmail:'Isi email dan password',errNet:'Error jaringan'}
+};
+function t(k){return T[L][k]||T.en[k]||k}
+function setL(l){L=l;['zh','en','id'].forEach(function(x){var el=document.getElementById('l'+x);el.className=x===l?'active':''});applyL()}
+function applyL(){
+document.getElementById('slogan').textContent=t('slogan');
+document.getElementById('email').placeholder=t('email');
+document.getElementById('name').placeholder=t('name');
+document.getElementById('pass').placeholder=t('pass');
+document.getElementById('btn').textContent=isLogin?t('login'):t('reg');
+document.getElementById('togText').textContent=isLogin?t('noAcc'):t('hasAcc');
+document.getElementById('togBtn').textContent=isLogin?t('swReg'):t('swLogin');
 }
+function toggle(){isLogin=!isLogin;document.getElementById('name').style.display=isLogin?'none':'block';applyL();document.getElementById('err').style.display='none'}
 function showErr(m){var el=document.getElementById('err');el.textContent=m;el.style.display='block'}
-</script>
-</body></html>
+async function submit(){
+var e=document.getElementById('email').value.trim(),p=document.getElementById('pass').value;
+if(!e||!p)return showErr(t('errEmail'));
+try{
+var u=isLogin?API+'/auth/login':API+'/auth/register';
+var body=isLogin?{email:e,password:p}:{email:e,password:p,displayName:document.getElementById('name').value.trim()||e.split('@')[0]};
+var r=await fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+var d=await r.json();
+if(d.session){localStorage.setItem('wb_token',d.session.access_token);localStorage.setItem('wb_user',JSON.stringify(d.user));window.location.href='/sniper.html'}
+else showErr(d.error||t('errNet'))
+}catch(x){showErr(t('errNet'))}
+}
+applyL();
+// Check if already logged in
+if(localStorage.getItem('wb_token'))window.location.href='/sniper.html';
+</script></body></html>

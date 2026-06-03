@@ -62,6 +62,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0A0A1A;
 <div id="payStep3" style="display:none;text-align:center"><div style="font-size:40px">🎉</div><h3>VIP激活成功!</h3><button class="btn btn-primary" onclick="closePay()">开始狙击!</button></div></div></div>
 
 <script>
+// Auth guard
+if(!localStorage.getItem('wb_token'))window.location.href='/index.html';
+
 
 // Auth guard - redirect to login if no token
 var AUTH_TOKEN = localStorage.getItem('wb_token');
