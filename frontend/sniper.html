@@ -50,7 +50,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0A0A1A;
 <div class="tip">💡 点赞+评论大哥视频，开播后<strong>30%概率</strong>进你直播间</div>
 <div class="section">🎯 今日狙击目标</div>
 <div class="cards" id="list"><div class="loading"><div class="spin"></div><div>正在扫描大哥...</div></div></div>
-<div class="bottom"><button class="invite">👯 邀请+2</button><button class="vip" onclick="openPay()">💎 升级VIP</button></div>
+<div class="bottom"><button class="invite" onclick="openModal('invite')">👯 邀请+2</button><button style="flex:1;padding:10px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:#16162A;color:#fff;border:1px solid #2A2A45" onclick="openModal('redeem')">🔑 兑换邀请码</button><button class="vip" onclick="openPay()">💎 升级VIP</button></div>
 
 <div class="modal-overlay" id="payModal">
 <div class="modal" style="position:relative"><button class="close" onclick="closePay()">✕</button><h3>💎 开通会员</h3><div class="sub">每天50个精准大哥</div>
@@ -118,5 +118,33 @@ function loadQuota(){fetch(API+'/dist/quota?userId=u_test').then(function(r){ret
 var sec=1800;setInterval(function(){if(sec>0)sec--;var m=Math.floor(sec/60),s=sec%60;document.getElementById('timer').textContent=('0'+m).slice(-2)+':'+('0'+s).slice(-2)},1000);
 
 loadWhales();loadQuota();
+
+function openModal(type){var map={invite:'inviteModal',redeem:'redeemModal'};var el=document.getElementById(map[type]||type);if(el)el.classList.add('show');if(type==='invite')loadInviteCode()}
+function closeModal(type){var map={invite:'inviteModal',redeem:'redeemModal'};var el=document.getElementById(map[type]||type);if(el)el.classList.remove('show')}
+function loadInviteCode(){fetch(API+'/dist/referral/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:'u_'+Date.now()})}).then(function(r){return r.json()}).then(function(d){if(d.code){document.getElementById('inviteCode').textContent=d.code;window._inviteCode=d.code}}).catch(function(){})}
+function shareInvite(){var code=window._inviteCode||'------';var text='🔥 用我的邀请码 '+code+' 注册WhaleBell，双方各得+2大哥名额！ '+window.location.href;if(navigator.share){navigator.share({title:'WhaleBell',text:text,url:window.location.href}).catch(function(){})}else{navigator.clipboard.writeText(text).then(function(){toast('✅ 已复制！发给姐妹吧')})};closeModal('invite')}
+function doRedeem(){var code=document.getElementById('redeemInput').value.trim().toUpperCase();if(!code||code.length<4)return toast('请输入完整邀请码');fetch(API+'/dist/referral/redeem',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:'u_'+Date.now(),code:code})}).then(function(r){return r.json()}).then(function(d){if(d.success){toast('✅ 兑换成功！+2名额');closeModal('redeem');loadQuota();if(window._targets)renderCards(window._targets)}else{toast('❌ '+(d.error||'兑换失败'))}}).catch(function(){toast('❌ 网络错误')})}
+
 </script>
+
+<div class="modal-overlay" id="inviteModal">
+<div class="modal" style="position:relative">
+<button class="close" onclick="closeModal('invite')" style="position:absolute;top:8px;right:10px;background:none;border:none;color:#fff;font-size:18px;cursor:pointer">✕</button>
+<h3>👯 邀请姐妹解锁</h3>
+<div class="sub">邀请1个姐妹，双方各+2名额！<br>邀请2个，直接解锁全部VIP大哥！</div>
+<div style="background:#0A0A1A;padding:14px;border-radius:8px;text-align:center;margin-bottom:12px">
+<div style="font-size:11px;color:#8E8EA0">你的邀请码</div>
+<div id="inviteCode" style="font-size:28px;font-weight:800;letter-spacing:4px;color:#FF6B9D">------</div>
+</div>
+<button class="btn btn-primary" onclick="shareInvite()" style="width:100%">📤 复制邀请链接发给姐妹</button>
+</div></div>
+
+<div class="modal-overlay" id="redeemModal">
+<div class="modal" style="position:relative">
+<button class="close" onclick="closeModal('redeem')" style="position:absolute;top:8px;right:10px;background:none;border:none;color:#fff;font-size:18px;cursor:pointer">✕</button>
+<h3>🔑 兑换邀请码</h3>
+<div class="sub">输入姐妹给你的6位邀请码</div>
+<input id="redeemInput" placeholder="输入邀请码" maxlength="6" style="width:100%;background:#0A0A1A;border:1px solid #2A2A45;color:#fff;padding:10px;border-radius:8px;font-size:16px;text-transform:uppercase;letter-spacing:2px;text-align:center" oninput="this.value=this.value.toUpperCase()">
+<button class="btn btn-gold" onclick="doRedeem()" style="width:100%;margin-top:8px">兑换</button>
+</div></div>
 </body></html>
