@@ -65,10 +65,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0A0A1A;
 
 // Auth guard - redirect to login if no token
 var AUTH_TOKEN = localStorage.getItem('wb_token');
-var AUTH_USER = JSON.parse(localStorage.getItem('wb_user')||'null');
+var AUTH_USER = JSON.parse(localStorage.getItem('wb_user') || 'null');
 if (!AUTH_TOKEN) { window.location.href = '/index.html'; }
 var API = '/api';
-, plan='weekly', lang='zh', quota={free:5,total:5,premium:false};
+var plan = 'weekly';
+var lang = 'zh';
+var quota = {free:5,total:5,premium:false};
 
 // i18n
 var T = {
