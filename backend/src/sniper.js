@@ -161,11 +161,10 @@ function getDeepLinks(username) {
 // ============================================================
 
 
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
+
 
 async function getWhalesFromSupabase(limit = 10, category = null) {
-  if (!SUPABASE_URL || !SUPABASE_KEY) return null;
+  if (!SUPABASE_URL || !SUPABASE_KEY) { console.log("Supabase env missing"); return null; }
   try {
     const https = require('https');
     const url = SUPABASE_URL + '/rest/v1/whale_profiles?select=*&order=level.desc&limit=' + Math.min(limit * 3, 100);
@@ -175,10 +174,10 @@ async function getWhalesFromSupabase(limit = 10, category = null) {
         let body = ''; res.on('data', c => body += c); res.on('end', () => { try { resolve(JSON.parse(body)); } catch(e) { resolve(null); } });
       }).on('error', reject);
     });
-    if (!Array.isArray(data)) return null;
-    console.log('Supabase: ' + data.length + ' whales');
+    if (!Array.isArray(data)) { console.log("Supabase: no data"); return null; }
+    console.log("Supabase: " + data.length + " whales");
     return data;
-  } catch(e) { console.error('Supabase fetch error:', e.message); return null; }
+  } catch(e) { console.error("Supabase: " + e.message); return null; }
 }
 
 function supabaseWhaleToTarget(w, lang) {
