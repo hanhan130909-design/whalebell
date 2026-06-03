@@ -7,7 +7,9 @@ const fs = require('fs');
 const path = require('path');
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config();
+// Load .env from multiple locations (Railway sets env vars directly)
+try { require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') }); } catch(e) {}
+try { require('dotenv').config(); } catch(e) {}
 
 const { initWebSocket } = require('./websocket');
 const { supabase } = require('./database');
