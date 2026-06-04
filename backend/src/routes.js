@@ -196,45 +196,72 @@ router.post('/track/revenue', (req, res) => {
 // Get analytics summary (for debugging, later admin panel)
 router.get('/track/summary', async (req, res) => {
   try {
-    var counts = {};
-    if (supabaseAnalytics) {
-      var { data: rows, error } = await supabaseAnalytics.from('analytics').select('type');
-      if (!error && rows) {
-        rows.forEach(function(r) { counts[r.type] = (counts[r.type] || 0) + 1; });
-      }
-    }
-    // Merge with in-memory
-    counts.login = (counts.login || 0) + analytics.login.length;
-    counts.viewWhale = (counts.viewWhale || 0) + analytics.viewWhale.length;
-    counts.copyScript = (counts.copyScript || 0) + analytics.copyScript.length;
-    counts.commented = (counts.commented || 0) + analytics.commented.length;
-    counts.feedback = (counts.feedback || 0) + analytics.feedback.length;
-    counts.response = (counts.response || 0) + analytics.response.length;
-    counts.revenue = (counts.revenue || 0) + analytics.revenue.length;
-    
-    res.json({
-      totalLogins: counts.login || 0,
-      totalViews: counts.viewWhale || 0,
-      totalCopies: counts.copyScript || 0,
-      totalCommented: counts.commented || 0,
-      totalFeedback: counts.feedback || 0,
+    var stats = {
+      totalLogins: analytics.login.length,
+      totalViews: analytics.viewWhale.length,
+      totalCopies: analytics.copyScript.length,
+      totalCommented: analytics.commented.length,
+      totalFeedback: analytics.feedback.length,
       feedbackUp: analytics.feedback.filter(function(f){return f.vote==='up'}).length,
       feedbackDown: analytics.feedback.filter(function(f){return f.vote==='down'}).length,
-      totalResponses: counts.response || 0,
-      responsesByType: {
-        no_response: analytics.response.filter(function(r){return r.type==='no_response'}).length,
-        like: analytics.response.filter(function(r){return r.type==='like'}).length,
-        follow_back: analytics.response.filter(function(r){return r.type==='follow_back'}).length,
-        dm: analytics.response.filter(function(r){return r.type==='dm'}).length,
-        enter_room: analytics.response.filter(function(r){return r.type==='enter_room'}).length
-      },
-      totalRevenueReports: counts.revenue || 0,
-      revenueByRange: {
-        '0': analytics.revenue.filter(function(r){return r.range==='0'}).length,
-        '1-50K': analytics.revenue.filter(function(r){return r.range==='1-50K'}).length,
-        '50-200K': analytics.revenue.filter(function(r){return r.range==='50-200K'}).length,
-        '200K+': analytics.revenue.filter(function(r){return r.range==='200K+'}).length
+      totalResponses: analytics.response.length,
+      enterRoom: analytics.response.filter(function(r){return r.type==='enter_room'}).length,
+      followBack: analytics.response.filter(function(r){return r.type==='follow_back'}).length,
+      dm: analytics.response.filter(function(r){return r.type==='dm'}).length,
+      like: analytics.response.filter(function(r){return r.type==='like'}).length,
+      noResponse: analytics.response.filter(function(r){return r.type==='no_response'}).length,
+      totalRevenue: analytics.revenue.length,
+      rev0: analytics.revenue.filter(function(r){return r.range==='0'}).length,
+      rev1_50: analytics.revenue.filter(function(r){return r.range==='1-50K'}).length,
+      rev50_200: analytics.revenue.filter(function(r){return r.range==='50-200K'}).length,
+      rev200: analytics.revenue.filter(function(r){return r.range==='200K+'}).length
+    };
+
+    // Merge with Supabase stored data
+    if (supabaseAnalytics) {
+      var { data: rows, error } = await supabaseAnalytics.from('analytics').select('type,data');
+      if (!error && rows) {
+        rows.forEach(function(r) {
+          var t = r.type;
+          if (t === 'login') stats.totalLogins++;
+          else if (t === 'viewWhale') stats.totalViews++;
+          else if (t === 'copyScript') stats.totalCopies++;
+          else if (t === 'commented') stats.totalCommented++;
+          else if (t === 'feedback') {
+            stats.totalFeedback++;
+            if (r.data && r.data.vote === 'up') stats.feedbackUp++;
+            else stats.feedbackDown++;
+          } else if (t === 'response') {
+            stats.totalResponses++;
+            var rt = (r.data && r.data.type) || 'no_response';
+            if (rt === 'enter_room') stats.enterRoom++;
+            else if (rt === 'follow_back') stats.followBack++;
+            else if (rt === 'dm') stats.dm++;
+            else if (rt === 'like') stats.like++;
+            else stats.noResponse++;
+          } else if (t === 'revenue') {
+            stats.totalRevenue++;
+            var rv = (r.data && r.data.range) || '0';
+            if (rv === '1-50K') stats.rev1_50++;
+            else if (rv === '50-200K') stats.rev50_200++;
+            else if (rv === '200K+') stats.rev200++;
+            else stats.rev0++;
+          }
+        });
       }
+    }
+
+    res.json({
+      totalLogins: stats.totalLogins, totalViews: stats.totalViews, totalCopies: stats.totalCopies,
+      totalCommented: stats.totalCommented, totalFeedback: stats.totalFeedback,
+      feedbackUp: stats.feedbackUp, feedbackDown: stats.feedbackDown,
+      totalResponses: stats.totalResponses,
+      responsesByType: {
+        enter_room: stats.enterRoom, follow_back: stats.followBack, dm: stats.dm,
+        like: stats.like, no_response: stats.noResponse
+      },
+      totalRevenueReports: stats.totalRevenue,
+      revenueByRange: { '0': stats.rev0, '1-50K': stats.rev1_50, '50-200K': stats.rev50_200, '200K+': stats.rev200 }
     });
   } catch(e) {
     res.json({ totalLogins: analytics.login.length, totalViews: 0, totalCopies: 0, totalCommented: 0, totalFeedback: 0, feedbackUp: 0, feedbackDown: 0, totalResponses: 0, responsesByType: {}, totalRevenueReports: 0, revenueByRange: {} });
