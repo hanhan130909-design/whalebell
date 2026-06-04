@@ -174,6 +174,33 @@ function filterCat(c){cat=c;document.querySelectorAll('#cats button').forEach(fu
 track('login',{});
 
 // Load whales
+
+// Daily rotation - track shown whales
+function getShownToday() {
+  try {
+    var data = JSON.parse(localStorage.getItem('wb_shown') || '{}');
+    var today = new Date().toDateString();
+    if (data.date !== today) return { date: today, ids: [] };
+    return data;
+  } catch(e) { return { date: new Date().toDateString(), ids: [] }; }
+}
+function markShown(ids) {
+  var data = getShownToday();
+  for (var i = 0; i < ids.length; i++) {
+    if (data.ids.indexOf(ids[i]) < 0) data.ids.push(ids[i]);
+  }
+  localStorage.setItem('wb_shown', JSON.stringify(data));
+}
+function filterShown(targets) {
+  var shown = getShownToday().ids;
+  var fresh = targets.filter(function(t) { return shown.indexOf(t.id) < 0; });
+  if (fresh.length < 5) {
+    localStorage.setItem('wb_shown', JSON.stringify({ date: new Date().toDateString(), ids: [] }));
+    return targets;
+  }
+  return fresh;
+}
+
 async function loadWhales(){
 var btn=document.getElementById('refreshBtn');btn.classList.add('loading');
 try{
@@ -181,7 +208,7 @@ var url=API+'/sniper/targets?lang='+L+'&limit=20';
 if(cat)url+='&category='+cat;
 if(reg)url+='&region='+encodeURIComponent(reg);
 url+='&_='+Date.now();var r=await fetch(url);var d=await r.json();
-if(d.success&&d.targets.length){window._targets=d.targets;renderCards(d.targets);
+if(d.success&&d.targets.length){var fresh=filterShown(d.targets);window._targets=fresh;renderCards(fresh);markShown(fresh.map(function(t){return t.id}));
 var mx=0;for(var i=0;i<d.targets.length;i++){if(d.targets[i].level>mx)mx=d.targets[i].level}
 document.getElementById('statTotal').textContent=d.targets.length;document.getElementById('statMax').textContent='LV'+mx;document.getElementById('statDone').textContent=Object.keys(commented).length}
 }catch(e){document.getElementById('list').innerHTML='<div class=loading-page>😢 '+e.message+'</div>'}
