@@ -179,7 +179,7 @@ async function getWhalesFromSupabase(limit = 10, category = null, region = null)
   if (!supabase) return null;
   try {
     // Simple query, no contains() filter (encoding issues with CJK characters)
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from('whale_profiles')
       .select('*')
       .gte('level', 30)
