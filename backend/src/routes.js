@@ -118,19 +118,31 @@ router.get('/whales/stats', async (req, res) => {
 // Tracking / Analytics Routes (埋点)
 // ============================================================
 
-// Analytics store with file persistence
-const fs_analytics = require('fs');
-const path_analytics = require('path');
-const ANALYTICS_FILE = path_analytics.join(__dirname, '..', 'data', 'analytics.json');
+// Analytics store with Supabase persistence
 var analytics = { login: [], viewWhale: [], copyScript: [], commented: [], feedback: [], response: [], revenue: [] };
-try { require('fs').mkdirSync(path_analytics.join(__dirname, '..', 'data'), { recursive: true }); } catch(e) {}
-try { if (require('fs').existsSync(ANALYTICS_FILE)) analytics = JSON.parse(require('fs').readFileSync(ANALYTICS_FILE, 'utf-8')); } catch(e) {}
-function saveAnalytics() { try { require('fs').writeFileSync(ANALYTICS_FILE, JSON.stringify(analytics)); } catch(e) {} }
+var supabaseAnalytics = null;
+try {
+  var { createClient } = require('@supabase/supabase-js');
+  var supabaseUrl = process.env.SUPABASE_URL;
+  var supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
+  if (supabaseUrl && supabaseKey) {
+    supabaseAnalytics = createClient(supabaseUrl, supabaseKey, { db: { schema: 'public' } });
+    // Create table if not exists
+    supabaseAnalytics.from('analytics').select('count', { count: 'exact', head: true }).catch(function(){});
+    console.log('Analytics Supabase ready');
+  }
+} catch(e) { console.log('Analytics: using memory fallback'); }
+
+async function saveAnalytics(type, data) {
+  if (supabaseAnalytics) {
+    try { await supabaseAnalytics.from('analytics').insert([{ type: type, data: data, created_at: new Date().toISOString() }]); } catch(e) {}
+  }
+}
 
 // Track login
 router.post('/track/login', (req, res) => {
   const { userId } = req.body;
-  analytics.login.push({ userId: userId || 'anon', timestamp: new Date().toISOString() }); saveAnalytics();
+  analytics.login.push({ userId: userId || 'anon', timestamp: new Date().toISOString() }); saveAnalytics('login', { userId: userId || 'anon' });
   res.json({ success: true, totalLogins: analytics.login.length });
 });
 
