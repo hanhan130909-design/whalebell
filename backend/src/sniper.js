@@ -331,6 +331,45 @@ try {
   supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY);
 } catch(e) { console.error('Supabase init error:', e.message); }
 
+
+// WhaleSense data source (312K whales)
+async function getWhalesFromWhaleSense(limit) {
+  var wsUrl = 'https://kknlamwvjfyvethqromz.supabase.co';
+  var wsKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrbmxhbXd2amZ5dmV0aHFyb216Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg3Nzc4OTYsImV4cCI6MjA2NDM1Mzg5Nn0.tS36FrpNW4xMAU2RBDRf3d8Z1Q0-ocS4c__Pa6A';
+  try {
+    var https = require('https');
+    var u = new URL(wsUrl + '/rest/v1/whales?select=*&level=gte.30&limit=2000');
+    var data = await new Promise(function(resolve, reject) {
+      https.get({ hostname: u.hostname, path: u.pathname + u.search, headers: { apikey: wsKey, Authorization: 'Bearer ' + wsKey }}, function(res) {
+        var body = ''; res.on('data', function(c) { body += c; }); res.on('end', function() { try { resolve(JSON.parse(body)); } catch(e) { resolve(null); } });
+      }).on('error', reject);
+    });
+    if (!Array.isArray(data) || data.length === 0) return null;
+    // Shuffle and random window
+    for (var i = data.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var x = data[i]; data[i] = data[j]; data[j] = x; }
+    var maxStart = Math.max(0, data.length - limit);
+    var start = Math.floor(Math.random() * maxStart);
+    data = data.slice(start, start + limit);
+    return data.map(function(w) { return wsMapToTarget(w); });
+  } catch(e) { return null; }
+}
+
+function wsMapToTarget(w) {
+  var region = w.region || 'N/A';
+  var whaleLang = getLangForRegion(region) || 'id';
+  var tags = w.level >= 40 ? ['high_level','vip'] : w.level >= 30 ? ['high_level'] : [];
+  if (w.total_gifts > 50000) tags.push('often_gifter');
+  var template = matchTemplate(tags, whaleLang);
+  var links = getDeepLinks(w.username);
+  return {
+    id: w.id || w.username, username: w.username, nickname: w.nickname || w.username,
+    level: w.level || 0, tags: tags, persona: tags[1] || tags[0],
+    lastActive: '活跃', comment: template.comment, templateType: template.templateType,
+    deepLinks: links, videoUrl: links.web, totalCoins: w.total_gifts || 0,
+    region: region, roomsVisited: w.alert_count || 0
+  };
+}
+
 async function getWhalesFromSupabase(limit = 10, category = null, region = null) {
   if (!supabase) return null;
   try {
@@ -419,7 +458,8 @@ router.get('/targets', async (req, res) => {
 
   // Try Supabase first
   var filterRegion = req.query.region || null;
-  rawTargets = await getWhalesFromSupabase(count, category, filterRegion);
+  rawTargets = await getWhalesFromWhaleSense(count);
+  if (!rawTargets || rawTargets.length === 0) rawTargets = await getWhalesFromSupabase(count, category, filterRegion);
   
   // Fallback to mock
   if (!rawTargets || rawTargets.length === 0) {

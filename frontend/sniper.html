@@ -240,7 +240,13 @@ if(d.success&&d.targets.length){var fresh=filterShown(d.targets);window._targets
 var mx=0;for(var i=0;i<d.targets.length;i++){if(d.targets[i].level>mx)mx=d.targets[i].level}
 document.getElementById('statTotal').textContent=d.targets.length;document.getElementById('statMax').textContent='LV'+mx;document.getElementById('statDone').textContent=Object.keys(commented).length}
 }catch(e){document.getElementById('list').innerHTML='<div class=loading-page>😢 '+e.message+'</div>'}
-btn.classList.remove('loading')
+btn.classList.remove('loading');
+  // Track view
+  if (d.targets && d.targets.length > 0) {
+    var uid = localStorage.getItem('wb_user');
+    if (uid) uid = JSON.parse(uid).id;
+    fetch(API + '/track/view', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: uid || 'anon', whaleId: d.targets[0].id || 'list' }) }).catch(function(){});
+  }
 }
 
 function toggleCommented(id){
