@@ -1,9 +1,12 @@
 <!DOCTYPE html>
-<html lang="zh"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>WhaleBell 统计</title>
+<html lang="zh"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>WhaleBell Stats</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:Arial,sans-serif;background:#0A0A1A;color:#fff;min-height:100vh;padding:20px}
 h1{font-size:22px;margin-bottom:10px;background:linear-gradient(135deg,#FF6B9D,#FFD700);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.lang{display:flex;gap:6px;margin-bottom:16px}
+.lang button{background:none;border:1px solid rgba(255,255,255,0.2);color:#8E8EA0;padding:4px 14px;border-radius:6px;font-size:11px;cursor:pointer}
+.lang button.active{background:rgba(255,107,157,0.3);border-color:#FF6B9D;color:#fff}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
 .card{background:#16162A;border:1px solid #2A2A45;border-radius:12px;padding:14px;text-align:center}
 .card .num{font-size:28px;font-weight:800}
@@ -18,26 +21,39 @@ h1{font-size:22px;margin-bottom:10px;background:linear-gradient(135deg,#FF6B9D,#
 .refresh{text-align:center;margin-top:16px}
 .refresh button{background:rgba(255,107,157,0.15);color:#FF6B9D;border:1px solid rgba(255,107,157,0.3);padding:8px 24px;border-radius:8px;font-size:13px;cursor:pointer}
 </style></head><body>
-<h1>🐋 WhaleBell 统计面板</h1>
+<h1>🐋 WhaleBell <span id="statTitle">统计面板</span></h1>
+<div class="lang"><button class="active" id="lzh" onclick="setL('zh')">中文</button><button id="len" onclick="setL('en')">EN</button><button id="lid" onclick="setL('id')">ID</button></div>
 <div class="grid">
-<div class="card"><div class="num pink" id="v1">-</div><div class="label">注册/登录</div></div>
-<div class="card"><div class="num gold" id="v2">-</div><div class="label">查看大哥</div></div>
-<div class="card"><div class="num green" id="v3">-</div><div class="label">复制话术</div></div>
-<div class="card"><div class="num" id="v4">-</div><div class="label">已评论</div></div>
+<div class="card"><div class="num pink" id="v1">-</div><div class="label" id="l1">注册/登录</div></div>
+<div class="card"><div class="num gold" id="v2">-</div><div class="label" id="l2">查看大哥</div></div>
+<div class="card"><div class="num green" id="v3">-</div><div class="label" id="l3">复制话术</div></div>
+<div class="card"><div class="num" id="v4">-</div><div class="label" id="l4">已评论</div></div>
 </div>
-<div class="section">👍👎 反馈</div>
-<table class="table"><tr><td>👍 有用</td><td id="fbUp">-</td></tr><tr><td>👎 没用</td><td id="fbDown">-</td></tr></table>
-<div class="section">🔁 回流</div>
+<div class="section" id="secFb">👍👎 反馈</div>
+<table class="table"><tr><td id="fbUpLabel">👍 有用</td><td id="fbUp">-</td></tr><tr><td id="fbDownLabel">👎 没用</td><td id="fbDown">-</td></tr></table>
+<div class="section" id="secRe">🔁 回流</div>
 <table class="table">
-<tr><td>进直播间</td><td id="reEnter">-</td></tr><tr><td>点关注</td><td id="reFollow">-</td></tr><tr><td>私信</td><td id="reDM">-</td></tr><tr><td>点赞</td><td id="reLike">-</td></tr><tr><td>无回应</td><td id="reNone">-</td></tr>
+<tr><td id="reEnterLabel">进直播间</td><td id="reEnter">-</td></tr><tr><td id="reFollowLabel">点关注</td><td id="reFollow">-</td></tr><tr><td id="reDMLabel">私信</td><td id="reDM">-</td></tr><tr><td id="reLikeLabel">点赞</td><td id="reLike">-</td></tr><tr><td id="reNoneLabel">无回应</td><td id="reNone">-</td></tr>
 </table>
-<div class="section">💰 流水区间</div>
+<div class="section" id="secRv">💰 流水区间</div>
 <table class="table">
 <tr><td>0 IDR</td><td id="rv0">-</td></tr><tr><td>1-50K</td><td id="rv1">-</td></tr><tr><td>50-200K</td><td id="rv2">-</td></tr><tr><td>200K+</td><td id="rv3">-</td></tr>
 </table>
-<div class="refresh"><button onclick="load()">🔄 刷新</button></div>
+<div class="refresh"><button onclick="load()" id="refreshBtn">🔄 刷新</button></div>
 <script>
-var API='/api';
+var API='/api',L='zh';
+var T={zh:{title:'统计面板',login:'注册/登录',view:'查看大哥',copy:'复制话术',comment:'已评论',fb:'👍👎 反馈',up:'👍 有用',down:'👎 没用',re:'🔁 回流',enter:'进直播间',follow:'点关注',dm:'私信',like:'点赞',none:'无回应',rv:'💰 流水区间',refresh:'🔄 刷新'},
+en:{title:'Dashboard',login:'Reg/Login',view:'Whale Views',copy:'Scripts Copied',comment:'Commented',fb:'👍👎 Feedback',up:'👍 Useful',down:'👎 Not',re:'🔁 Response',enter:'Entered Room',follow:'Followed',dm:'DM',like:'Liked',none:'No Response',rv:'💰 Revenue',refresh:'🔄 Refresh'},
+id:{title:'Dasbor',login:'Daftar/Masuk',view:'Lihat Bos',copy:'Skrip Disalin',comment:'Dikomen',fb:'👍👎 Feedback',up:'👍 Berguna',down:'👎 Tidak',re:'🔁 Respons',enter:'Masuk Room',follow:'Follow',dm:'DM',like:'Like',none:'No Respons',rv:'💰 Pendapatan',refresh:'🔄 Segar'}};
+function t(k){return T[L][k]||T.en[k]||k}
+function setL(l){L=l;['zh','en','id'].forEach(function(x){document.getElementById('l'+x).className=x===l?'active':''});applyL()}
+function applyL(){
+document.getElementById('statTitle').textContent=t('title');
+document.getElementById('l1').textContent=t('login');document.getElementById('l2').textContent=t('view');document.getElementById('l3').textContent=t('copy');document.getElementById('l4').textContent=t('comment');
+document.getElementById('secFb').textContent=t('fb');document.getElementById('fbUpLabel').textContent=t('up');document.getElementById('fbDownLabel').textContent=t('down');
+document.getElementById('secRe').textContent=t('re');document.getElementById('reEnterLabel').textContent=t('enter');document.getElementById('reFollowLabel').textContent=t('follow');document.getElementById('reDMLabel').textContent=t('dm');document.getElementById('reLikeLabel').textContent=t('like');document.getElementById('reNoneLabel').textContent=t('none');
+document.getElementById('secRv').textContent=t('rv');document.getElementById('refreshBtn').textContent=t('refresh');
+}
 async function load(){
 try{var r=await fetch(API+'/track/summary');var d=await r.json();
 document.getElementById('v1').textContent=d.totalLogins||0;
@@ -57,6 +73,5 @@ document.getElementById('rv2').textContent=(d.revenueByRange||{})['50-200K']||0;
 document.getElementById('rv3').textContent=(d.revenueByRange||{})['200K+']||0;
 }catch(e){}
 }
-load();setInterval(load,30000);
-</script>
-</body></html>
+applyL();load();setInterval(load,30000);
+</script></body></html>
