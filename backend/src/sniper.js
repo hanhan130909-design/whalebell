@@ -185,10 +185,6 @@ async function getWhalesFromSupabase(limit = 10, category = null, region = null)
       .gte('level', 30)
       .order('level', { ascending: false })
       .limit(1000);
-    // Random offset for variety
-    var totalCount = 50000;
-    var randomOffset = Math.floor(Math.random() * Math.max(0, totalCount - 30));
-    if (randomOffset > 0) query = query.range(randomOffset, randomOffset + 29);
     if (error) { console.error('Supabase query error:', error.message, error.details); return null; }
     if (!data || data.length === 0) { console.log('No data from Supabase'); return null; }
     // Priority: Malaysia & Indonesia whales first
