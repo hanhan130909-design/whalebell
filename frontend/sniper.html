@@ -201,6 +201,34 @@ function filterShown(targets) {
   return fresh;
 }
 
+
+// Tracking functions — report to analytics API
+function track(evt, whaleId, data) {
+  var body = { userId: localStorage.getItem('wb_user') ? JSON.parse(localStorage.getItem('wb_user')).id : 'anon', whaleId: whaleId };
+  if (data) Object.assign(body, data);
+  fetch(API + '/track/' + evt, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).catch(function(){});
+}
+function markCommented(whaleId, btn) {
+  btn.textContent = '✅ 已评论'; btn.style.background = 'rgba(0,230,118,0.25)';
+  track('commented', whaleId);
+}
+function voteFeedback(whaleId, vote, btn) {
+  btn.textContent = vote === 'up' ? '👍 已投' : '👎 已投';
+  var other = btn.parentElement.querySelector('.btn-vote' + (vote === 'up' ? '.down' : '.up'));
+  if (other) { other.textContent = vote === 'up' ? '👎' : '👍'; other.style.opacity = '0.4'; }
+  btn.style.opacity = '1'; btn.style.background = 'rgba(255,107,157,0.25)';
+  track('feedback', whaleId, { vote: vote });
+}
+function showResponseModal(whaleId) {
+  var r = confirm('大哥有没有回应？\n确定 = 进直播间了\n取消 = 还没回应');
+  if (r) { track('response', whaleId, { type: 'enter_room' }); toast('✅ 已记录!'); }
+  else { track('response', whaleId, { type: 'no_response' }); }
+}
+function showRevenueModal(whaleId) {
+  var r = prompt('大哥刷了多少IDR？\n0 / 1-50000 / 50000-200000 / 200000+', '0');
+  if (r !== null) { track('revenue', whaleId, { range: r }); toast('💰 已记录!'); }
+}
+
 async function loadWhales(){
 var btn=document.getElementById('refreshBtn');btn.classList.add('loading');
 try{
@@ -294,7 +322,16 @@ h+='</div></div></div>';
 document.getElementById('list').innerHTML=h||'<div class=loading-page>😢 暂无数据</div>';
 
 // Bind copy handlers
-for(var j=0;j<targets.length;j++){(function(idx,t){var btn=document.getElementById('cb'+idx);if(btn)btn._whale=t})(j,targets[j])}
+for(var j=0;j<targets.length;j++){(function(idx,t){
+var card=document.getElementById('list').children[idx];if(card){
+var btns=card.querySelectorAll('button');btns.forEach(function(b){
+if(b.textContent.indexOf('已评论')>=0)b.onclick=function(){markCommented(t.id,b)};
+if(b.textContent.indexOf('有用')>=0)b.onclick=function(){voteFeedback(t.id,'up',b)};
+if(b.textContent.indexOf('没用')>=0)b.onclick=function(){voteFeedback(t.id,'down',b)};
+if(b.textContent.indexOf('关注回流')>=0)b.onclick=function(){showResponseModal(t.id)};
+if(b.textContent.indexOf('今日流水')>=0)b.onclick=function(){showRevenueModal(t.id)};
+});}
+var btn=document.getElementById('cb'+idx);if(btn)btn._whale=t})(j,targets[j])}
 }
 
 function doCopy(idx){
