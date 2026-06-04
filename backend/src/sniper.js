@@ -184,9 +184,14 @@ async function getWhalesFromSupabase(limit = 10, category = null, region = null)
       .select('*')
       .gte('level', 30)
       .order('level', { ascending: false })
-      .limit(Math.min(limit * 3, 200));
+      .limit(1000);
     if (error) { console.error('Supabase query error:', error.message, error.details); return null; }
     if (!data || data.length === 0) { console.log('No data from Supabase'); return null; }
+    // Priority: Malaysia & Indonesia whales first
+    var priority = ['马来西亚', '印度尼西亚', 'Indonesia', 'Malaysia'];
+    var preferred = data.filter(function(w) { return priority.indexOf(w.region) >= 0; });
+    var others = data.filter(function(w) { return priority.indexOf(w.region) < 0; });
+    data = preferred.concat(others);
     // Category filter
     if (category && STREAMER_CATEGORIES[category]) {
       var matchTags = STREAMER_CATEGORIES[category].targetTags;
