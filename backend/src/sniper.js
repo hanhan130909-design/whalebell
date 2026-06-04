@@ -180,7 +180,7 @@ async function getWhalesFromSupabase(limit = 10, category = null, region = null)
   try {
     // Simple query, no contains() filter (encoding issues with CJK characters)
     let { data, error } = await supabase
-      .from('whales')
+      .from('whale_profiles')
       .select('*')
       .gte('level', 30)
       .order('level', { ascending: false })
@@ -203,7 +203,7 @@ async function getWhalesFromSupabase(limit = 10, category = null, region = null)
     }
     // Region filter
     if (region) {
-      data = data.filter(function(w) { return (w.region || '').indexOf(region) >= 0; });
+      data = data.filter(function(w) { var r = w.region || ''; return r.indexOf(region) >= 0; });
     }
     // Shuffle
     for (var i = data.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var x = data[i]; data[i] = data[j]; data[j] = x; }
