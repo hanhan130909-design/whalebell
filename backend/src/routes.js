@@ -112,4 +112,101 @@ router.get('/whales/stats', async (req, res) => {
   }
 });
 
+// ============================================================
+// Tracking / Analytics Routes (埋点)
+// ============================================================
+
+// In-memory analytics store (test phase, later migrate to Supabase)
+const analytics = {
+  login: [],          // { userId, timestamp }
+  viewWhale: [],      // { userId, whaleId, timestamp }
+  copyScript: [],     // { userId, whaleId, script, timestamp }
+  commented: [],      // { userId, whaleId, timestamp }
+  feedback: [],       // { userId, whaleId, vote: 'up'|'down', timestamp }
+  response: [],       // { userId, whaleId, type: 'no_response'|'like'|'follow_back'|'dm'|'enter_room', timestamp }
+  revenue: []         // { userId, whaleId, range: '0'|'1-50K'|'50-200K'|'200K+', timestamp }
+};
+
+// Track login
+router.post('/track/login', (req, res) => {
+  const { userId } = req.body;
+  analytics.login.push({ userId: userId || 'anon', timestamp: new Date().toISOString() });
+  res.json({ success: true, totalLogins: analytics.login.length });
+});
+
+// Track whale view (点击查看金主)
+router.post('/track/view', (req, res) => {
+  const { userId, whaleId } = req.body;
+  analytics.viewWhale.push({ userId: userId || 'anon', whaleId, timestamp: new Date().toISOString() });
+  res.json({ success: true });
+});
+
+// Track copy script (复制话术)
+router.post('/track/copy', (req, res) => {
+  const { userId, whaleId, script } = req.body;
+  analytics.copyScript.push({ userId: userId || 'anon', whaleId, script: (script||'').substring(0,100), timestamp: new Date().toISOString() });
+  res.json({ success: true });
+});
+
+// Track commented (已评论)
+router.post('/track/commented', (req, res) => {
+  const { userId, whaleId } = req.body;
+  analytics.commented.push({ userId: userId || 'anon', whaleId, timestamp: new Date().toISOString() });
+  res.json({ success: true });
+});
+
+// Track feedback (👍👎)
+router.post('/track/feedback', (req, res) => {
+  const { userId, whaleId, vote } = req.body;
+  if (!vote || !['up','down'].includes(vote)) return res.status(400).json({ error: 'vote must be up or down' });
+  analytics.feedback.push({ userId: userId || 'anon', whaleId, vote, timestamp: new Date().toISOString() });
+  res.json({ success: true });
+});
+
+// Track response (关注回流)
+router.post('/track/response', (req, res) => {
+  const { userId, whaleId, type } = req.body;
+  const valid = ['no_response','like','follow_back','dm','enter_room'];
+  if (!type || !valid.includes(type)) return res.status(400).json({ error: 'invalid response type' });
+  analytics.response.push({ userId: userId || 'anon', whaleId, type, timestamp: new Date().toISOString() });
+  res.json({ success: true });
+});
+
+// Track revenue (流水反馈)
+router.post('/track/revenue', (req, res) => {
+  const { userId, whaleId, range } = req.body;
+  const valid = ['0','1-50K','50-200K','200K+'];
+  if (!range || !valid.includes(range)) return res.status(400).json({ error: 'invalid revenue range' });
+  analytics.revenue.push({ userId: userId || 'anon', whaleId, range, timestamp: new Date().toISOString() });
+  res.json({ success: true });
+});
+
+// Get analytics summary (for debugging, later admin panel)
+router.get('/track/summary', (req, res) => {
+  res.json({
+    totalLogins: analytics.login.length,
+    totalViews: analytics.viewWhale.length,
+    totalCopies: analytics.copyScript.length,
+    totalCommented: analytics.commented.length,
+    totalFeedback: analytics.feedback.length,
+    feedbackUp: analytics.feedback.filter(f => f.vote === 'up').length,
+    feedbackDown: analytics.feedback.filter(f => f.vote === 'down').length,
+    totalResponses: analytics.response.length,
+    responsesByType: {
+      no_response: analytics.response.filter(r => r.type === 'no_response').length,
+      like: analytics.response.filter(r => r.type === 'like').length,
+      follow_back: analytics.response.filter(r => r.type === 'follow_back').length,
+      dm: analytics.response.filter(r => r.type === 'dm').length,
+      enter_room: analytics.response.filter(r => r.type === 'enter_room').length
+    },
+    totalRevenueReports: analytics.revenue.length,
+    revenueByRange: {
+      '0': analytics.revenue.filter(r => r.range === '0').length,
+      '1-50K': analytics.revenue.filter(r => r.range === '1-50K').length,
+      '50-200K': analytics.revenue.filter(r => r.range === '50-200K').length,
+      '200K+': analytics.revenue.filter(r => r.range === '200K+').length
+    }
+  });
+});
+
 module.exports = router;

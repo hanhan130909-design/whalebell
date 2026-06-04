@@ -15,9 +15,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .lang button{background:none;border:1px solid rgba(255,255,255,0.2);color:var(--dim);padding:2px 10px;border-radius:6px;font-size:10px;cursor:pointer}
 .lang button.active{background:rgba(255,107,157,0.3);border-color:var(--pink);color:#fff}
 .logout{position:absolute;top:12px;right:16px;z-index:2;background:rgba(255,255,255,0.08);border:none;color:var(--dim);padding:4px 12px;border-radius:6px;font-size:11px;cursor:pointer}
-.quota{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--card);font-size:13px;border-bottom:1px solid var(--border)}
-.quota .num{color:var(--pink);font-weight:700}
-.quota .btn{background:linear-gradient(135deg,var(--gold),#FF8C00);color:#000;border:none;padding:6px 16px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer}
 .stats{display:flex;padding:12px 16px;gap:0}
 .stat{flex:1;text-align:center}
 .stat .v{font-size:18px;font-weight:700}
@@ -34,10 +31,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .section .refresh.loading{animation:spin 0.8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .cards{padding:4px 16px}
-.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:8px;position:relative}
-.card.premium{border-color:var(--gold);box-shadow:0 0 20px rgba(255,215,0,0.08)}
-.card.locked{opacity:0.35;filter:blur(1px)}
-.card.locked .lock-overlay{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2;cursor:pointer}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px;position:relative}
 .card .row{display:flex;align-items:flex-start;gap:10px}
 .card .av{font-size:32px;min-width:44px;text-align:center;line-height:1}
 .card .info{flex:1}
@@ -49,13 +43,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .card .tag.persona{background:rgba(0,230,118,0.15);color:#00E676}
 .card .meta{font-size:11px;color:var(--dim);margin:2px 0;display:flex;gap:12px}
 .card .comment{font-size:12px;color:#aaa;font-style:italic;margin:8px 0;padding:6px 10px;background:rgba(255,255,255,0.03);border-radius:6px;border-left:2px solid var(--border)}
-.card .btns{display:flex;gap:6px}
-.card .btn-copy{background:rgba(255,107,157,0.12);color:var(--pink);border:1px solid rgba(255,107,157,0.25);padding:6px 12px;border-radius:6px;font-size:11px;cursor:pointer;flex:1}
-.card .btn-tt{background:var(--pink);color:#fff;border:none;padding:6px 12px;border-radius:6px;font-size:11px;cursor:pointer;text-decoration:none;text-align:center}
+.card .btns{display:flex;gap:6px;flex-wrap:wrap}
+.card .btns button{flex:1;min-width:60px;padding:6px 10px;border-radius:6px;font-size:11px;cursor:pointer;font-weight:500;border:none}
+.card .btn-copy{background:rgba(255,107,157,0.12);color:var(--pink);border:1px solid rgba(255,107,157,0.25)!important}
+.card .btn-tt{background:var(--pink);color:#fff;text-decoration:none;text-align:center;display:inline-flex;align-items:center;justify-content:center}
+.card .btn-commented{background:rgba(0,230,118,0.12);color:#00E676;border:1px solid rgba(0,230,118,0.25)!important}
+.card .btn-commented.done{background:rgba(0,230,118,0.3);color:#fff}
+/* Feedback row */
+.fb-row{display:flex;gap:4px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);flex-wrap:wrap}
+.fb-btn{flex:1;padding:5px 8px;border-radius:6px;font-size:11px;cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--dim);text-align:center;min-width:50px;transition:all .2s}
+.fb-btn:hover{opacity:.8}
+.fb-btn.up.active,.fb-btn.down.active{color:#fff;border-color:transparent}
+.fb-btn.up.active{background:rgba(0,230,118,0.3);border-color:#00E676!important}
+.fb-btn.down.active{background:rgba(255,68,68,0.3);border-color:#ff4444!important}
+.fb-btn.response.active{background:rgba(124,92,252,0.3);border-color:var(--purple)!important}
+.fb-btn.rev.active{background:rgba(255,215,0,0.3);border-color:var(--gold)!important}
+.response-row{display:none;gap:4px;margin-top:6px;flex-wrap:wrap}
+.response-row.show{display:flex}
+.response-row .fb-btn{background:var(--card);border-color:var(--border);flex:0 0 auto;padding:4px 10px}
+.rev-row{display:none;gap:4px;margin-top:6px;flex-wrap:wrap}
+.rev-row.show{display:flex}
+.rev-row .fb-btn{background:var(--card);border-color:var(--border);flex:0 0 auto;padding:4px 10px}
 .bottom{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);padding:8px 16px 16px;display:flex;gap:6px;z-index:10}
-.bottom button{flex:1;padding:10px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer}
-.bottom .invite{background:var(--card);color:var(--text);border:1px solid var(--border)}
-.bottom .vip{background:linear-gradient(135deg,var(--gold),#FF8C00);color:#000;border:none}
+.bottom button{flex:1;padding:10px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,var(--gold),#FF8C00);color:#000;border:none}
 .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--pink);color:#fff;padding:8px 20px;border-radius:20px;font-size:13px;z-index:999}
 .loading-page{text-align:center;padding:40px;color:var(--dim)}
 .spin{display:inline-block;width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--pink);border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:8px}
@@ -64,27 +74,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .modal{background:var(--card);border-radius:var(--radius);padding:20px;max-width:340px;width:90%;border:1px solid var(--border);position:relative}
 .modal h3{font-size:18px;margin-bottom:4px}
 .modal .sub{font-size:12px;color:var(--dim);margin-bottom:16px}
-.modal input,.modal select{width:100%;background:var(--bg);border:1px solid var(--border);color:#fff;padding:10px;border-radius:8px;margin-bottom:8px;font-size:13px;outline:none}
-.modal input:focus,.modal select:focus{border-color:var(--pink)}
 .modal .btn{width:100%;padding:12px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;margin-top:6px}
 .modal .btn-pink{background:var(--pink);color:#fff;border:none}
-.modal .btn-gold{background:linear-gradient(135deg,var(--gold),#FF8C00);color:#000;border:none}
 .modal .close{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--dim);font-size:18px;cursor:pointer}
-.plan-row{display:flex;gap:8px;margin-bottom:12px}
-.plan{flex:1;background:var(--bg);border:2px solid var(--border);border-radius:10px;padding:12px;text-align:center;cursor:pointer}
-.plan.sel{border-color:var(--pink)}
-.plan .price{font-size:22px;font-weight:800}
-.plan .label{font-size:11px;color:var(--dim)}
-.acct-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px}
-.acct-row .cpy{color:var(--pink);cursor:pointer;font-size:16px}
 </style>
 </head><body>
 <div class="header"><button class="logout" onclick="logout()">退出</button><h1>🐋 WhaleBell</h1><div class="badge" id="badge">🎯 化妆间狙击</div><div class="timer" id="timer">30:00</div><div class="timer-sub" id="timerSub">化妆准备时间</div>
 <div class="lang"><button class="active" id="lzh" onclick="setL('zh')">中文</button><button id="len" onclick="setL('en')">EN</button><button id="lid" onclick="setL('id')">ID</button></div></div>
 
-<div class="quota"><span>🎯 <span id="quotaLabel">今日剩余</span> <span class="num" id="quotaNum">5</span> <span id="quotaUnit">个狙击名额</span></span><button class="btn" onclick="openPay()">💎 <span id="vipBtn">升级VIP</span></button></div>
-
-<div class="stats"><div class="stat"><div class="v" id="statTotal">-</div><div class="l" id="lblTotal">目标总数</div></div><div class="stat"><div class="v" id="statDone">0</div><div class="l" id="lblDone">已完成</div></div><div class="stat"><div class="v" id="statFree">5</div><div class="l" id="lblFree">免费配额</div></div><div class="stat"><div class="v gold" id="statMax">-</div><div class="l" id="lblMax">最高等级</div></div></div>
+<div class="stats"><div class="stat"><div class="v" id="statTotal">-</div><div class="l" id="lblTotal">目标总数</div></div><div class="stat"><div class="v" id="statDone">0</div><div class="l" id="lblDone">已完成</div></div><div class="stat"><div class="v gold" id="statMax">-</div><div class="l" id="lblMax">最高等级</div></div></div>
 
 <div class="tip">💡 <span id="tipText">点赞+评论大哥视频，开播后30%概率进你直播间！</span></div>
 
@@ -98,7 +96,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 <button id="catBtn6" onclick="filterCat('talk')">💬 聊天</button>
 </div>
 
-
 <div class="cats" style="padding:0 16px 8px" id="regionCats">
 <button class="active" onclick="filterRegion('')">🌏 全部地区</button>
 <button onclick="filterRegion('马来西亚')">🇲🇾 马来西亚</button>
@@ -108,39 +105,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 <div class="section"><h2 id="secTitle">🎯 今日狙击目标</h2><button class="refresh" id="refreshBtn" onclick="loadWhales()">🔄</button></div>
 <div class="cards" id="list"><div class="loading-page"><div class="spin"></div><div>正在扫描大哥...</div></div></div>
 
-<div class="bottom"><button class="invite" onclick="openModal('invite')">👯 邀请+2</button><button class="invite" onclick="openModal('redeem')">🔑 兑换邀请码</button><button class="vip" onclick="openPay()">💎 升级VIP</button></div>
-
-<!-- Payment Modal -->
-<div class="modal-overlay" id="payModal"><div class="modal">
-<button class="close" onclick="closeModal('pay')">✕</button><h3>💎 开通会员</h3><div class="sub">每天50个精准大哥推荐</div>
-<div class="plan-row"><div class="plan sel" id="planW" onclick="selPlan('weekly')"><div class="price">29K</div><div class="label">周卡</div></div><div class="plan" id="planM" onclick="selPlan('monthly')"><div class="price">79K</div><div class="label">月卡</div></div></div>
-<div id="payStep1"><button class="btn btn-pink" onclick="showPayStep2()">💳 选择支付方式</button></div>
-<div id="payStep2" style="display:none"><div style="background:var(--bg);padding:10px;border-radius:8px;margin-bottom:10px;font-size:12px"><div style="color:var(--dim);margin-bottom:6px">📋 转账到以下账户：</div><div id="accts" style="display:flex;flex-direction:column;gap:4px"></div></div>
-<input id="payName" placeholder="你的名字"><select id="payMethod"><option value="">选择转账方式</option><option>GoPay</option><option>Dana</option><option>BCA</option></select>
-<button class="btn btn-gold" onclick="submitPay()">✅ 我已转账，激活VIP</button></div>
-<div id="payStep3" style="display:none;text-align:center"><div style="font-size:48px">🎉</div><h3>VIP激活成功!</h3><button class="btn btn-pink" onclick="closeModal('pay');loadQuota();loadWhales()">开始狙击!</button></div></div></div>
-
-<!-- Invite Modal -->
-<div class="modal-overlay" id="inviteModal"><div class="modal">
-<button class="close" onclick="closeModal('invite')">✕</button><h3>👯 邀请姐妹解锁</h3><div class="sub">邀请1人各+2名额，邀请2人解锁全部VIP大哥</div>
-<div style="background:var(--bg);padding:14px;border-radius:8px;text-align:center;margin-bottom:12px"><div style="font-size:11px;color:var(--dim)">你的邀请码</div><div style="font-size:28px;font-weight:800;letter-spacing:4px;color:var(--pink)" id="inviteCode">------</div></div>
-<button class="btn btn-pink" onclick="shareInvite()">📤 复制邀请链接发给姐妹</button><button class="btn" style="width:100%;padding:10px;border-radius:8px;font-size:13px;cursor:pointer;margin-top:6px;background:var(--bg);color:var(--dim);border:1px solid var(--border)" onclick="closeModal('invite');openModal('how')">📖 查看分销说明</button></div></div>
-
-<!-- Redeem Modal -->
-<div class="modal-overlay" id="redeemModal"><div class="modal">
-<button class="close" onclick="closeModal('redeem')">✕</button><h3>🔑 兑换邀请码</h3><div class="sub">输入姐妹给你的6位邀请码</div>
-<input id="redeemInput" placeholder="输入邀请码" maxlength="6" oninput="this.value=this.value.toUpperCase()" style="text-transform:uppercase;letter-spacing:2px;text-align:center;font-size:20px">
-<button class="btn btn-gold" onclick="doRedeem()">兑换</button></div></div>
+<div class="bottom"><button onclick="loadWhales()">🔄 <span id="refreshLabel">刷新</span></button></div>
 
 <script>
 if(!localStorage.getItem('wb_token'))window.location.href='/index.html';
 
-var API='/api',L='zh',plan='weekly',quota={free:5,premium:false},cat='',reg='',sniped={};
+var API='/api',L='zh',cat='',reg='',commented={},feedback={},responses={},revenues={},_uid='u_'+Date.now();
 
 var T={
-zh:{badge:'🎯 化妆间狙击',howTitle:'分销说明',howSub:'邀请姐妹一起用，躺着赚钱',howL1:'🔗 直推 L1 — 40%',howL1Desc:'你直接邀请的主播买 VIP → 你拿走 40%。月卡 79K → 你赚 31,600 IDR',howL2:'🔗 间推 L2 — 10%',howL2Desc:'你邀请的人又邀请了别人 → 那人买 VIP → 你拿 10%',howGroup:'👯 姐妹拼团',howGroupDesc:'3 人成团 → 全员解锁 VIP 大哥。团长额外 +5,000 IDR',howQuota:'每邀请 1 人，双方各得 +2 大哥名额',howBtn:'知道了',timerSub:'化妆准备时间',quota:'今日剩余',unit:'个狙击名额',vip:'升级VIP',total:'目标总数',done:'已完成',free:'免费配额',max:'最高等级',tip:'点赞+评论大哥视频，开播后30%概率进你直播间！',sec:'🎯 今日狙击目标',copy:'复制话术',tt:'TikTok',locked:'🔒 已锁定',unlock:'邀请解锁',invite:'邀请+2',redeem:'兑换邀请码',all:'全部',refresh:'刷新'},
-en:{badge:'🎯 Vanity Sniper',howTitle:'Distribution',howSub:'Invite friends, earn passive income',howL1:'🔗 Direct L1 — 40%',howL1Desc:'Your direct referral buys VIP -> you earn 40%. Monthly 79K -> you get 31,600 IDR',howL2:'🔗 Indirect L2 — 10%',howL2Desc:'Your referrals referral buys VIP -> you earn 10%',howGroup:'👯 Group Buy',howGroupDesc:'3-person group -> everyone unlocks VIP. Leader bonus +5,000 IDR',howQuota:'Each invite: both get +2 whale targets',howBtn:'Got it!',timerSub:'Prep time',quota:'Remaining',unit:'targets',vip:'VIP',total:'Total',done:'Done',free:'Free',max:'Max LV',tip:'Like+comment, 30% chance they visit!',sec:"🎯 Today's Targets",copy:'Copy',tt:'TikTok',locked:'🔒 Locked',unlock:'Unlock',invite:'Invite +2',redeem:'Redeem',all:'All',refresh:'Refresh'},
-id:{badge:'🎯 Sniper Dandan',howTitle:'Cara Distribusi',howSub:'Ajak teman, dapat passive income',howL1:'🔗 Langsung L1 — 40%',howL1Desc:'Teman langsung kamu beli VIP -> kamu dapat 40%. Bulanan 79K -> kamu dapat 31,600 IDR',howL2:'🔗 Tidak Langsung L2 — 10%',howL2Desc:'Temannya teman kamu beli VIP -> kamu tetap dapat 10%',howGroup:'👯 Patungan',howGroupDesc:'3 orang patungan -> semua buka VIP. Leader bonus +5,000 IDR',howQuota:'Setiap undangan: berdua dapat +2 target bos',howBtn:'OK!',timerSub:'Waktu dandan',quota:'Sisa',unit:'target',vip:'VIP',total:'Total',done:'Selesai',free:'Gratis',max:'LV Max',tip:'Like+komen, 30% mampir!',sec:'🎯 Target Hari Ini',copy:'Salin',tt:'TikTok',locked:'🔒 Terkunci',unlock:'Buka',invite:'Ajak +2',redeem:'Kode',all:'Semua',refresh:'Segar'}
+zh:{badge:'🎯 化妆间狙击',timerSub:'化妆准备时间',total:'目标总数',done:'已完成',max:'最高等级',tip:'点赞+评论大哥视频，开播后30%概率进你直播间！',sec:'🎯 今日狙击目标',copy:'复制话术',tt:'TikTok',commented:'已评论',doneLabel:'已评论',all:'全部',refresh:'刷新',
+copyDone:'✅ 已复制',fbUp:'👍 有用',fbDown:'👎 没用',response:'关注回流',responseNone:'无回应',responseLike:'点赞',responseFollow:'回关',responseDm:'私信',responseEnter:'进直播间',revenue:'今日流水',rev0:'0',rev1k:'1-50K',rev2k:'50-200K',rev3k:'200K+',feedbackSent:'反馈已记录'},
+en:{badge:'🎯 Vanity Sniper',timerSub:'Prep time',total:'Total',done:'Done',max:'Max LV',tip:'Like+comment, 30% chance they visit!',sec:"🎯 Today's Targets",copy:'Copy',tt:'TikTok',commented:'Commented',doneLabel:'Done',all:'All',refresh:'Refresh',
+copyDone:'✅ Copied',fbUp:'👍 Useful',fbDown:'👎 No',response:'Follow-up',responseNone:'No reply',responseLike:'Liked',responseFollow:'Followed',responseDm:'DM',responseEnter:'Entered room',revenue:'Revenue',rev0:'0',rev1k:'1-50K',rev2k:'50-200K',rev3k:'200K+',feedbackSent:'Feedback saved'},
+id:{badge:'🎯 Sniper Dandan',timerSub:'Waktu dandan',total:'Total',done:'Selesai',max:'LV Max',tip:'Like+komen, 30% mampir!',sec:'🎯 Target Hari Ini',copy:'Salin',tt:'TikTok',commented:'Komen',doneLabel:'Selesai',all:'Semua',refresh:'Segar',
+copyDone:'✅ Disalin',fbUp:'👍 Berguna',fbDown:'👎 Tidak',response:'Respon',responseNone:'Tidak ada',responseLike:'Suka',responseFollow:'Follow',responseDm:'DM',responseEnter:'Masuk',revenue:'Pendapatan',rev0:'0',rev1k:'1-50K',rev2k:'50-200K',rev3k:'200K+',feedbackSent:'Feedback disimpan'}
 };
 function t(k){return T[L][k]||T.en[k]||k}
 function st(id,val){var el=document.getElementById(id);if(el)el.textContent=val}
@@ -172,16 +150,19 @@ function tt(tag){return TT[L]?.[tag]||tag}
 function setL(l){L=l;['zh','en','id'].forEach(function(x){var el=document.getElementById('l'+x);el.className=x===l?'active':''});applyL();if(window._targets)renderCards(window._targets)}
 function applyL(){
 document.getElementById('badge').textContent=t('badge');document.getElementById('timerSub').textContent=t('timerSub');
-document.getElementById('quotaLabel').textContent='🎯 '+t('quota');document.getElementById('quotaUnit').textContent=t('unit');document.getElementById('vipBtn').textContent=t('vip');
-document.getElementById('lblTotal').textContent=t('total');document.getElementById('lblDone').textContent=t('done');document.getElementById('lblFree').textContent=t('free');document.getElementById('lblMax').textContent=t('max');st('howTitle',t('howTitle'));st('howSub',t('howSub'));st('howL1',t('howL1'));st('howL1Desc',t('howL1Desc'));st('howL2',t('howL2'));st('howL2Desc',t('howL2Desc'));st('howGroup',t('howGroup'));st('howGroupDesc',t('howGroupDesc'));st('howQuota',t('howQuota'));st('howBtn',t('howBtn'));
-document.getElementById('tipText').textContent=t('tip');document.getElementById('secTitle').textContent=t('sec');updateCats();
+document.getElementById('lblTotal').textContent=t('total');document.getElementById('lblDone').textContent=t('done');document.getElementById('lblMax').textContent=t('max');
+document.getElementById('tipText').textContent=t('tip');document.getElementById('secTitle').textContent=t('sec');document.getElementById('refreshLabel').textContent=t('refresh');updateCats();
 }
 
 function logout(){localStorage.clear();window.location.href='/index.html'}
 function toast(m){var d=document.createElement('div');d.className='toast';d.textContent=m;document.body.appendChild(d);setTimeout(function(){d.remove()},2000)}
-function openModalInvite(){openModal('invite')}
-function toggleSniped(id){if(sniped[id]){delete sniped[id]}else{sniped[id]=true}document.getElementById('statDone').textContent=Object.keys(sniped).length;renderCards(window._targets||[])}
-function copyText(tx){navigator.clipboard.writeText(tx).then(function(){toast('✅ '+t('copy'))})}
+function copyText(tx){navigator.clipboard.writeText(tx).then(function(){toast('✅ '+t('copyDone'))})}
+
+// Tracking helpers
+function track(action,data){
+  data.userId=_uid;
+  fetch(API+'/track/'+action,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).catch(function(){});
+}
 
 // Category filter
 var CATS={zh:['全部','💃 热舞','✨ 颜值','🎤 唱歌','😂 搞笑','🎮 游戏','💬 聊天'],en:['All','💃 Dance','✨ Beauty','🎤 Singer','😂 Comedy','🎮 Games','💬 Chat'],id:['Semua','💃 Dansa','✨ Cantik','🎤 Nyanyi','😂 Lucu','🎮 Game','💬 Obrolan']};
@@ -189,125 +170,139 @@ function updateCats(){var labels=CATS[L]||CATS.en;for(var i=0;i<7;i++){var btn=d
 function filterRegion(r){reg=r;document.querySelectorAll('#regionCats button').forEach(function(b,i){b.className=i===0&&!r?'active':b.textContent.includes(r)?'active':''});loadWhales()}
 function filterCat(c){cat=c;document.querySelectorAll('#cats button').forEach(function(b){var dc=b.getAttribute('data-cat')||'';b.className=dc===c?'active':''});document.querySelectorAll('#regionCats button').forEach(function(b){b.className=reg&&b.textContent.includes(reg)?'active':''});loadWhales()}
 
-// Payment
-function openPay(){document.getElementById('payModal').classList.add('show')}
-function closeModal(id){var el=document.getElementById(id+'Modal');if(el)el.classList.remove('show')}
-function openModal(id){var el=document.getElementById(id+'Modal');if(el)el.classList.add('show');if(id==='invite')loadInviteCode()}
-function selPlan(p){plan=p;document.getElementById('planW').className='plan'+(p==='weekly'?' sel':'');document.getElementById('planM').className='plan'+(p==='monthly'?' sel':'')}
-function showPayStep2(){document.getElementById('payStep1').style.display='none';document.getElementById('payStep2').style.display='block';loadAccts()}
-function loadAccts(){
-fetch(API+'/pay/config').then(function(r){return r.json()}).then(function(d){
-var el=document.getElementById('accts');el.innerHTML='';
-if(d.accounts){var ks=Object.keys(d.accounts);for(var i=0;i<ks.length;i++){var a=d.accounts[ks[i]];if(typeof a!=='object'||a.number==='未设置')continue;
-var div=document.createElement('div');div.className='acct-row';
-div.innerHTML='<span>'+a.icon+' '+a.name+': <b>'+a.number+'</b></span><span class=cpy>📋</span>';
-div.querySelector('.cpy').onclick=(function(n){return function(){copyText(n)}})(a.number);
-el.appendChild(div)}}if(!el.innerHTML)el.innerHTML='暂无收款账户'}).catch(function(){})}
-async function submitPay(){
-var n=document.getElementById('payName').value,m=document.getElementById('payMethod').value;
-if(!n)return toast('请输入名字');if(!m)return toast('请选择转账方式');
-try{
-var o=await(await fetch(API+'/pay/order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:'u_'+Date.now(),plan:plan})})).json();
-await(await fetch(API+'/pay/upload',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({orderId:o.orderId,paymentMethod:m,senderName:n})})).json();
-document.getElementById('payStep2').style.display='none';document.getElementById('payStep3').style.display='block';
-quota.premium=true;quota.free=999;renderCards(window._targets||[]);
-await fetch(API+'/dist/premium/mock',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:'u_'+Date.now(),plan:plan})}).catch(function(){})
-}catch(e){toast('网络错误')}
-}
-
-// Invite / Redeem
-function loadInviteCode(){fetch(API+'/dist/referral/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:'u_'+Date.now()})}).then(function(r){return r.json()}).then(function(d){if(d.code){document.getElementById('inviteCode').textContent=d.code;window._inviteCode=d.code}}).catch(function(){})}
-function shareInvite(){var code=window._inviteCode||'------';var text='🔥 用邀请码 '+code+' 注册WhaleBell，双方各得+2大哥名额！ '+window.location.origin;if(navigator.share){navigator.share({title:'WhaleBell',text:text,url:window.location.origin}).catch(function(){})}else{navigator.clipboard.writeText(text).then(function(){toast('✅ 已复制')})};closeModal('invite')}
-function doRedeem(){var code=document.getElementById('redeemInput').value.trim().toUpperCase();if(!code||code.length<4)return toast('请输入邀请码');fetch(API+'/dist/referral/redeem',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:'u_'+Date.now(),code:code})}).then(function(r){return r.json()}).then(function(d){if(d.success){toast('✅ +2名额');closeModal('redeem');loadQuota()}else{toast('❌ '+(d.error||'失败'))}}).catch(function(){toast('❌ 网络错误')})}
+// Track login on page load
+track('login',{});
 
 // Load whales
-
-// Daily whale rotation tracker
-function getShownToday() {
-  try {
-    var data = JSON.parse(localStorage.getItem('wb_shown') || '{}');
-    var today = new Date().toDateString();
-    if (data.date !== today) return { date: today, ids: [] };
-    return data;
-  } catch(e) { return { date: new Date().toDateString(), ids: [] }; }
-}
-function markShown(ids) {
-  var data = getShownToday();
-  for (var i = 0; i < ids.length; i++) {
-    if (data.ids.indexOf(ids[i]) < 0) data.ids.push(ids[i]);
-  }
-  localStorage.setItem('wb_shown', JSON.stringify(data));
-}
-function filterShown(targets) {
-  var shown = getShownToday().ids;
-  var fresh = targets.filter(function(t) { return shown.indexOf(t.id) < 0; });
-  // If less than 5 fresh, reset and show all
-  if (fresh.length < 5) {
-    localStorage.setItem('wb_shown', JSON.stringify({ date: new Date().toDateString(), ids: [] }));
-    return targets;
-  }
-  return fresh;
-}
-
 async function loadWhales(){
 var btn=document.getElementById('refreshBtn');btn.classList.add('loading');
 try{
-var url=API+'/sniper/targets?lang='+L+'&limit=10';
+var url=API+'/sniper/targets?lang='+L+'&limit=20';
 if(cat)url+='&category='+cat;
 if(reg)url+='&region='+encodeURIComponent(reg);
 url+='&_='+Date.now();var r=await fetch(url);var d=await r.json();
-if(d.success&&d.targets.length){var fresh=filterShown(d.targets);window._targets=fresh;renderCards(fresh);markShown(fresh.map(function(t){return t.id}));
-document.getElementById('statTotal').textContent=fresh.length;var mx=0;for(var i=0;i<d.targets.length;i++){if(d.targets[i].level>mx)mx=d.targets[i].level}document.getElementById('statMax').textContent='LV'+mx;document.getElementById('statDone').textContent=Object.keys(sniped).length}
+if(d.success&&d.targets.length){window._targets=d.targets;renderCards(d.targets);
+var mx=0;for(var i=0;i<d.targets.length;i++){if(d.targets[i].level>mx)mx=d.targets[i].level}
+document.getElementById('statTotal').textContent=d.targets.length;document.getElementById('statMax').textContent='LV'+mx;document.getElementById('statDone').textContent=Object.keys(commented).length}
 }catch(e){document.getElementById('list').innerHTML='<div class=loading-page>😢 '+e.message+'</div>'}
 btn.classList.remove('loading')
+}
+
+function toggleCommented(id){
+if(commented[id]){delete commented[id]}else{commented[id]=true;track('commented',{whaleId:id})}
+document.getElementById('statDone').textContent=Object.keys(commented).length;renderCards(window._targets||[])
+}
+
+function setFeedback(id,vote){
+var key=id+'_fb';
+if(feedback[key]===vote){delete feedback[key]}else{feedback[key]=vote;track('feedback',{whaleId:id,vote:vote})}
+renderCards(window._targets||[])
+}
+
+function setResponse(id,type){
+var key=id+'_resp';
+if(responses[key]===type){delete responses[key]}else{responses[key]=type;track('response',{whaleId:id,type:type})}
+renderCards(window._targets||[])
+}
+
+function setRevenue(id,range){
+var key=id+'_rev';
+if(revenues[key]===range){delete revenues[key]}else{revenues[key]=range;track('revenue',{whaleId:id,range:range})}
+renderCards(window._targets||[])
 }
 
 function renderCards(targets){
 var h='';var em={50:'👑',49:'💎',48:'💎',47:'💎',46:'🦁',45:'🦁',44:'🦁',43:'🦁',42:'🐯',41:'🐯',40:'🐯'};
 for(var i=0;i<targets.length;i++){
-var w=targets[i],e=em[w.level]||'⭐',locked=!quota.premium&&i>=quota.free;
+var w=targets[i],e=em[w.level]||'⭐';
 var name=w.nickname||w.username||'?',region=w.region||'',tp=w.templateType||'';
 var tags=(w.tags||[]).slice(0,3),coins=w.totalCoins||0;
-if(locked){h+='<div class="card locked"><div class="lock-overlay" onclick="openModalInvite()"><div style="font-size:32px">🔒</div><div style="font-size:14px;font-weight:700;margin:4px 0">'+t('locked')+'</div><div style="font-size:11px;color:var(--dim)">'+t('unlock')+'</div></div><div class="row"><div class="av">🔒</div><div class="info"><div class="name">'+t('locked')+'</div><div class="uname">-----</div></div></div></div>';continue}
-h+='<div class="card'+(w.isPremium?' premium':'')+'"><div class="row"><div class="av">'+e+'</div><div class="info"><div class="name">'+name+'<span class="lv">LV'+w.level+'</span></div><div class="uname">@'+w.username+'</div><div class="tags">'+tags.map(function(tg){return '<span class="tag">'+tt(tg)+'</span>'}).join('')+(w.persona?'<span class="tag persona">'+tt(w.persona)+'</span>':'')+'<span class="tag" style="background:rgba(255,215,0,0.12);color:#FFD700">'+tp+'</span></div><div class="meta"><span>📍 '+region+'</span><span>💰 '+(coins>0?(coins>=1000?(coins/1000).toFixed(1)+'K':coins):'N/A')+'</span><span>🟢 Online</span></div><div class="comment">" '+(w.comment||'').substring(0,80)+'..."</div><div class="btns"><button class="btn-snipe" id="sn'+i+'" onclick="toggleSniped('+w.id+')" style="background:rgba(0,230,118,0.12);color:#00E676;border:1px solid rgba(0,230,118,0.25);padding:6px 10px;border-radius:6px;font-size:11px;cursor:pointer;min-width:60px">☑️ 已狙</button><button class="btn-copy" id="cb'+i+'">📋 '+t('copy')+'</button><a class="btn-tt" onclick="openTT(this)" data-user="'+w.username+'" href="#">📱 '+t('tt')+'</a></div></div></div></div>'
+var isCommented=!!commented[w.id];
+var fbKey=w.id+'_fb',fbVal=feedback[fbKey]||'';
+var respKey=w.id+'_resp',respVal=responses[respKey]||'';
+var revKey=w.id+'_rev',revVal=revenues[revKey]||'';
+var respOpen=respVal?' show':'';
+var revOpen=revVal?' show':'';
+
+h+='<div class="card"><div class="row"><div class="av">'+e+'</div><div class="info"><div class="name">'+name+'<span class="lv">LV'+w.level+'</span></div><div class="uname">@'+w.username+'</div><div class="tags">'+tags.map(function(tg){return '<span class="tag">'+tt(tg)+'</span>'}).join('')+(w.persona?'<span class="tag persona">'+tt(w.persona)+'</span>':'')+'<span class="tag" style="background:rgba(255,215,0,0.12);color:#FFD700">'+tp+'</span></div><div class="meta"><span>📍 '+region+'</span><span>💰 '+(coins>0?(coins>=1000?(coins/1000).toFixed(1)+'K':coins):'N/A')+'</span><span>🟢 Online</span></div><div class="comment">" '+(w.comment||'').substring(0,80)+'...\"</div>';
+
+// Action buttons row
+h+='<div class="btns">';
+h+='<button class="btn-copy" id="cb'+i+'" onclick="doCopy('+i+')">📋 '+t('copy')+'</button>';
+h+='<a class="btn-tt" onclick="openTT(this)" data-user="'+w.username+'" href="#">📱 '+t('tt')+'</a>';
+h+='<button class="btn-commented'+(isCommented?' done':'')+'" id="cm'+i+'" onclick="toggleCommented('+w.id+')">'+(isCommented?'✅ '+t('doneLabel'):'💬 '+t('commented'))+'</button>';
+h+='</div>';
+
+// Feedback row: 👍👎
+h+='<div class="fb-row">';
+h+='<button class="fb-btn up'+(fbVal==='up'?' active':'')+'" onclick="setFeedback('+w.id+',\'up\')">'+t('fbUp')+'</button>';
+h+='<button class="fb-btn down'+(fbVal==='down'?' active':'')+'" onclick="setFeedback('+w.id+',\'down\')">'+t('fbDown')+'</button>';
+
+// Response (关注回流)
+h+='<button class="fb-btn response'+(respVal?' active':'')+'" onclick="toggleResp('+w.id+')">'+t('response')+'</button>';
+// Revenue (流水反馈)
+h+='<button class="fb-btn rev'+(revVal?' active':'')+'" onclick="toggleRev('+w.id+')">'+t('revenue')+'</button>';
+h+='</div>';
+
+// Response options row
+h+='<div class="response-row'+respOpen+'" id="respRow'+w.id+'">';
+var respOpts=['no_response','like','follow_back','dm','enter_room'];
+var respLabels=[t('responseNone'),t('responseLike'),t('responseFollow'),t('responseDm'),t('responseEnter')];
+for(var ri=0;ri<respOpts.length;ri++){
+h+='<button class="fb-btn response'+(respVal===respOpts[ri]?' active':'')+'" onclick="setResponse('+w.id+',\''+respOpts[ri]+'\')">'+respLabels[ri]+'</button>';
+}
+h+='</div>';
+
+// Revenue options row
+h+='<div class="rev-row'+revOpen+'" id="revRow'+w.id+'">';
+var revOpts=['0','1-50K','50-200K','200K+'];
+var revLabels=[t('rev0'),t('rev1k'),t('rev2k'),t('rev3k')];
+for(var ri=0;ri<revOpts.length;ri++){
+h+='<button class="fb-btn rev'+(revVal===revOpts[ri]?' active':'')+'" onclick="setRevenue('+w.id+',\''+revOpts[ri]+'\')">'+revLabels[ri]+'</button>';
+}
+h+='</div>';
+
+h+='</div></div></div>';
 }
 document.getElementById('list').innerHTML=h||'<div class=loading-page>😢 暂无数据</div>';
-for(var j=0;j<targets.length;j++){(function(idx,t){var btn=document.getElementById('cb'+idx);if(btn)btn.onclick=function(){copyText(t.comment||'')};var sn=document.getElementById('sn'+idx);if(sn){if(sniped[t.id]){sn.textContent='✅ 已狙击';sn.style.background='rgba(0,230,118,0.3)'}else{sn.textContent='☑️ 已狙';sn.style.background='rgba(0,230,118,0.12)'}}})(j,targets[j])}
+
+// Bind copy handlers
+for(var j=0;j<targets.length;j++){(function(idx,t){var btn=document.getElementById('cb'+idx);if(btn)btn._whale=t})(j,targets[j])}
+}
+
+function doCopy(idx){
+var t=window._targets[idx];
+if(!t)return;
+copyText(t.comment||'');
+track('copy',{whaleId:t.id,script:(t.comment||'').substring(0,100)});
+}
+
+function toggleResp(id){
+var el=document.getElementById('respRow'+id);
+if(el)el.classList.toggle('show');
+if(!el.classList.contains('show')){
+var key=id+'_resp';
+if(responses[key]){delete responses[key]}
+renderCards(window._targets||[])
+}
+}
+
+function toggleRev(id){
+var el=document.getElementById('revRow'+id);
+if(el)el.classList.toggle('show');
+if(!el.classList.contains('show')){
+var key=id+'_rev';
+if(revenues[key]){delete revenues[key]}
+renderCards(window._targets||[])
+}
 }
 
 function openTT(el){var u=el.getAttribute('data-user');window.open('tiktok://user/'+u,'_self');setTimeout(function(){window.open('https://www.tiktok.com/@'+u,'_blank')},800)}
 
-function loadQuota(){fetch(API+'/dist/quota?userId=u_test').then(function(r){return r.json()}).then(function(d){quota=d;quota.free=d.freeQuota||5;quota.premium=d.isPremium||false;document.getElementById('quotaNum').textContent=quota.premium?'∞':quota.free;document.getElementById('statFree').textContent=quota.free;if(window._targets)renderCards(window._targets)}).catch(function(){})}
-
 // Timer
 var sec=1800;setInterval(function(){if(sec>0)sec--;var m=Math.floor(sec/60),s=sec%60;document.getElementById('timer').textContent=('0'+m).slice(-2)+':'+('0'+s).slice(-2)},1000);
 
-applyL();loadWhales();loadQuota();
+applyL();loadWhales();
 </script>
 
-<!-- How it Works Modal -->
-<div class="modal-overlay" id="howModal"><div class="modal" style="max-width:360px;max-height:80vh;overflow-y:auto">
-<button class="close" onclick="closeModal('how')">✕</button>
-<h3>💰 <span id="howTitle">分销说明</span></h3>
-<div class="sub" id="howSub">邀请姐妹一起用，你躺着赚钱</div>
-<div style="font-size:12px;line-height:1.7;color:var(--dim)">
-<div style="background:var(--bg);border-radius:8px;padding:10px;margin-bottom:10px">
-<div style="color:var(--gold);font-weight:700;margin-bottom:4px" id="howL1">🔗 直推 L1 — 40% 佣金</div>
-<div id="howL1Desc">你直接邀请的主播买 VIP → 你拿走 40%。月卡 79K → 你赚 31,600 IDR</div>
-</div>
-<div style="background:var(--bg);border-radius:8px;padding:10px;margin-bottom:10px">
-<div style="color:var(--purple);font-weight:700;margin-bottom:4px" id="howL2">🔗 间推 L2 — 10% 佣金</div>
-<div id="howL2Desc">你邀请的人又邀请了别人 → 那人买 VIP → 你拿 10%</div>
-</div>
-<div style="background:var(--bg);border-radius:8px;padding:10px;margin-bottom:10px">
-<div style="color:#00E676;font-weight:700;margin-bottom:4px" id="howGroup">👯 姐妹拼团</div>
-<div id="howGroupDesc">3 人成团 → 全员解锁 VIP 大哥。团长额外 +5,000 IDR</div>
-</div>
-<div style="text-align:center;margin-top:8px">
-<div style="font-size:28px;font-weight:800;color:var(--gold)">+2</div>
-<div style="font-size:11px;color:var(--dim)" id="howQuota">每邀请 1 人，双方各得 +2 大哥名额</div>
-</div>
-</div>
-<button class="btn btn-pink" onclick="closeModal('how')" style="width:100%;margin-top:12px" id="howBtn">知道了</button>
-</div></div>
 </body></html>
