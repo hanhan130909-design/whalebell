@@ -118,21 +118,19 @@ router.get('/whales/stats', async (req, res) => {
 // Tracking / Analytics Routes (埋点)
 // ============================================================
 
-// In-memory analytics store (test phase, later migrate to Supabase)
-const analytics = {
-  login: [],          // { userId, timestamp }
-  viewWhale: [],      // { userId, whaleId, timestamp }
-  copyScript: [],     // { userId, whaleId, script, timestamp }
-  commented: [],      // { userId, whaleId, timestamp }
-  feedback: [],       // { userId, whaleId, vote: 'up'|'down', timestamp }
-  response: [],       // { userId, whaleId, type: 'no_response'|'like'|'follow_back'|'dm'|'enter_room', timestamp }
-  revenue: []         // { userId, whaleId, range: '0'|'1-50K'|'50-200K'|'200K+', timestamp }
-};
+// Analytics store with file persistence
+const fs_analytics = require('fs');
+const path_analytics = require('path');
+const ANALYTICS_FILE = path_analytics.join(__dirname, '..', 'data', 'analytics.json');
+var analytics = { login: [], viewWhale: [], copyScript: [], commented: [], feedback: [], response: [], revenue: [] };
+try { require('fs').mkdirSync(path_analytics.join(__dirname, '..', 'data'), { recursive: true }); } catch(e) {}
+try { if (require('fs').existsSync(ANALYTICS_FILE)) analytics = JSON.parse(require('fs').readFileSync(ANALYTICS_FILE, 'utf-8')); } catch(e) {}
+function saveAnalytics() { try { require('fs').writeFileSync(ANALYTICS_FILE, JSON.stringify(analytics)); } catch(e) {} }
 
 // Track login
 router.post('/track/login', (req, res) => {
   const { userId } = req.body;
-  analytics.login.push({ userId: userId || 'anon', timestamp: new Date().toISOString() });
+  analytics.login.push({ userId: userId || 'anon', timestamp: new Date().toISOString() }); saveAnalytics();
   res.json({ success: true, totalLogins: analytics.login.length });
 });
 
