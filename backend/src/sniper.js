@@ -184,7 +184,7 @@ async function getWhalesFromSupabase(limit = 10, category = null, region = null)
       .select('*')
       .gte('level', 30)
       .order('level', { ascending: false })
-      .limit(Math.min(limit * 3, 100));
+      .limit(Math.min(limit * 3, 200));
     if (error) { console.error('Supabase query error:', error.message, error.details); return null; }
     if (!data || data.length === 0) { console.log('No data from Supabase'); return null; }
     // Category filter
