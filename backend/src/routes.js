@@ -19,6 +19,7 @@ router.post('/auth/register', async (req, res) => {
     }
     const data = await createUser(email, password, displayName);
     res.json({ user: data.user, session: data.session });
+    analytics.login.push({ userId: data.user.id, timestamp: new Date().toISOString(), type: 'register' });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -33,6 +34,7 @@ router.post('/auth/login', async (req, res) => {
     }
     const data = await loginUser(email, password);
     res.json({ user: data.user, session: data.session });
+    analytics.login.push({ userId: data.user.id, timestamp: new Date().toISOString(), type: 'login' });
   } catch (err) {
     res.status(401).json({ error: err.message });
   }
