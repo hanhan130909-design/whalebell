@@ -322,7 +322,7 @@ h+='</div></div></div>';
 document.getElementById('list').innerHTML=h||'<div class=loading-page>😢 暂无数据</div>';
 
 // Bind copy handlers
-track('view', targets[0].id); for(var j=0;j<targets.length;j++){(function(idx,t){
+for(var j=0;j<targets.length;j++){(function(idx,t){
 var card=document.getElementById('list').children[idx];if(card){
 var btns=card.querySelectorAll('button');btns.forEach(function(b){
 if(b.textContent.indexOf('已评论')>=0)b.onclick=function(){markCommented(t.id,b)};
