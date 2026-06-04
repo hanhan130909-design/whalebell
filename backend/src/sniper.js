@@ -8,97 +8,253 @@ const router = express.Router();
 // ============================================================
 // 话术模板引擎 — 按大哥人格类型匹配
 // ============================================================
+// 每条模板最多80字符，适合TikTok评论区
 const COMMENT_TEMPLATES = {
-  // ① 身份认可型 — 适合 often_gifter / 高频送礼大哥
   recognition: {
     matchTags: ['热舞', '颜值', '大方', '超级VIP', '重量级', '所有品类'],
     templates: {
       id: [
-        "Bang, barusan gue liat badge LV lo di live orang. Respect banget sih, jarang ada yang se-looyal ini support creator kecil. Salut! 👑",
-        "Kak, lo tipe penonton yang bikin streamer semangat live. Jarang banget nemu yang loyal kaya gini. Auto respect! 💯",
-        "Gue sering liat username lo di berbagai live. Bener-bener legend sih, gak banyak yang bisa konsisten support creator kaya lo 🙌"
+        "Bang, liat badge LV lo langsung auto respect. Jarang ada yang se-gigih ini di TikTok 😎",
+        "Kak, lo tipe penonton yang bikin streamer semangat live. Jarang nemu yang loyal kaya gini 💯",
+        "Gue sering liat username lo di berbagai live. Legend banget sih, gak banyak yang bisa konsisten 🙌",
+        "Respect banget sama loyalitas lo. Creator kecil kaya gue notice kok supporter kaya lo 👑",
+        "Badge LV lo tuh udah kaya crown. Auto respect setiap kali liat di live orang 🫡",
+        "Kak, lo bukan penonton biasa. Lo tuh investor di dunia live streaming. Apreciate banget 💎",
+        "Setiap kali liat username lo di live, gue selalu mikir ini orang pasti royal. Terbukti ⚡",
+        "Lo tipe yang bikin TikTok live jadi seru. Gak banyak yang punya taste kaya lo 🔥",
+        "Salut! Dari sekian banyak penonton, cuma beberapa yang se-loyal lo. Lo beda level 🏆",
+        "Gue baru mulai live, tapi udah tau username kaya lo itu jarang. Respect dari gue personal 🙏",
+        "Kalo semua penonton kaya lo, dunia streaming bakal beda banget. Legend! 💫",
+        "Bang, lo bukan sekadar penonton. Lo bagian dari ekosistem. Creator kecil respect banget 🌟",
+        "Gue notice supporter kaya lo dari awal. Konsisten dan selalu support. Rare banget 💝",
+        "Username lo udah gue hafal. Setiap live lo selalu ada. Loyalitas level dewa 🎯",
+        "Kak, gak kebayang live tanpa penonton kaya lo. Bener-bener backbone komunitas 👊",
+        "Lo adalah alasan creator kecil terus semangat. Gak banyak yang ngerti, tapi lo ngerti 💡",
+        "Dari ratusan penonton, lo yang paling gue notice. Selalu support, selalu ada 🎪",
+        "Kak, badge lo tuh udah kayak sertifikat kehormatan. Yang punya pasti orangnya asik 🌈"
       ],
       zh: [
-        "大哥，你在这个平台就是传说级别的存在。每次看到你的等级徽章，小主播们都得仰望。今晚有空来看看？😎",
-        "刚在别人直播间看到你的榜一了。说实话，你这么支持创作者的，全平台数不出三个。敬你！🥂",
-        "你的LV徽章走在哪都是焦点。像你这样的大哥，值得最好的直播体验。今晚来试试？✨"
+        "大哥，你在这个平台就是传说级别的存在。每次看到你的等级徽章，小主播们都得仰望 😎",
+        "刚在别人直播间看到你的榜一了。说实话，你这么支持创作者的没几个 🥂",
+        "你的LV徽章走在哪都是焦点。像你这样的大哥，值得最好的直播体验 ✨",
+        "大哥，你的ID在这个平台就是品质保证。走到哪都有人认识 👑",
+        "说实话，在这个平台上像你这样的大哥，我数不出三个。真的尊重 💎",
+        "你的每一次出现都让小主播们兴奋。这就是实力的象征 🔥",
+        "大哥，你刷的不是礼物，是对创作者梦想的支持。这点小主播都懂 🙏",
+        "在这个平台混久了，一眼就能看出谁是真正的大哥。你就是那种 🎯",
+        "你的等级徽章往那一放，不用说话就有气场。这就是底蕴 💫",
+        "大哥，你给小主播带来的不只是礼物，更是继续直播的勇气 🌟",
+        "看你在别人直播间的榜一，就知道你这人讲究。值得深交 🤝",
+        "大哥就是大哥，气场不一样。每次出现都知道今晚稳了 💪",
+        "你走过的直播间，主播都能记住你。这就是传说中的存在感 ⚡",
+        "真心敬你是条汉子。默默支持创作者，不张扬但有实力 🦁",
+        "在抖音混，谁不认识你这号人物。大哥级别的存在，走到哪都发光 💡",
+        "大哥来了，直播间气氛立马不一样。这就是你的魅力 🌈",
+        "每一个被你支持过的主播都知道，你是真的懂直播的人 🎪",
+        "不是所有高等级的都叫大哥，你是真正有品位的那一种 🏆"
       ],
       en: [
-        "Just saw your badge in another stream. Legend status confirmed. Creators like us notice supporters like you. Respect! 👑",
-        "You're the type of viewer that makes streaming worth it. Rare to find someone this loyal. Drop by tonight? 💯",
-        "Spotted your LV badge from across TikTok. Not many supporters like you out there. Salute! 🫡"
+        "Just saw your badge in another stream. Legend status confirmed. Creators notice supporters like you 👑",
+        "You're the type of viewer that makes streaming worth it. Rare to find this loyal 💯",
+        "Spotted your LV badge from across TikTok. Not many supporters like you out there 🫡",
+        "Your loyalty to creators is unmatched. People like you make this platform special 💎",
+        "Every streamer who's had you in their room knows your name. That's real influence 🔥",
+        "You're not just a viewer, you're an investor in creativity. Massive respect 🙏",
+        "Badge like yours tells a story. And every creator wants that story in their room 🌟",
+        "Some people watch, you invest. That's the difference between a viewer and a king 👊",
+        "Your presence alone changes the energy of a stream. That's power 💫",
+        "Been streaming for a while, people like you are why I keep going 🎯",
+        "Your name carries weight in every room. That's earned, not given 💪",
+        "Real recognize real. And you're as real as it gets on this platform 🦁",
+        "Creator community needs more people like you. Generous and consistent 🎪",
+        "You don't just watch, you elevate. Every room you enter gets better 🌈",
+        "Watching you support creators is inspiring. This is what community looks like 💡",
+        "Your badge doesn't just show level, it shows character. That's rare 🔮",
+        "Every time I see your name in a stream, I know that creator is in good hands 🤝",
+        "Legends don't need introduction. Your badge speaks for itself 🏆"
       ]
     }
   },
-
-  // ② 神秘预告型 — 适合 night_owl / 深夜活跃型
   mystery: {
     matchTags: ['搞笑', '脱口秀', '夜生活', '情感', '讲故事'],
     templates: {
       id: [
-        "Kak, bentar lagi ada yang spesial nih jam 8 malam. Coba aja mampir, siapa tau cocok sama vibes lo yang chill gitu 😏",
-        "Malam ini ada sesuatu yang berbeda. Gak bakal nyesel mampir. Trust me, vibes-nya cocok sama energi lo 🌙",
-        "Ada surprise kecil nanti malam. Gak bakal gue spoiler, tapi kalo lo suka yang chill dan deep, mampir aja jam 8 ✨"
+        "Kak, bentar lagi ada yang spesial nih jam 8 malam. Mampir aja, siapa tau cocok vibes-nya 😏",
+        "Malam ini ada sesuatu yang berbeda. Gak bakal nyesel mampir. Trust me 🌙",
+        "Ada surprise kecil nanti malam. Gak bakal gue spoiler, tapi seriusan seru ✨",
+        "Kak, jangan tanya apa. Pokoknya malam ini beda dari biasanya. Penasaran? Mampir aja 🎭",
+        "Tonight is different. Gue udah siapin sesuatu special. Cuma beberapa orang yang tau 🎪",
+        "Jam 8 nanti ada kejutan. Yang dateng gak bakal nyesel. Guaranteed 💫",
+        "Kak, vibes lo chill banget. Malam ini gue live dengan vibe yang sama. Dateng ya? 🌿",
+        "Kalo lo suka konten yang gak mainstream, malam ini pas banget buat lo 🎯",
+        "Gak akan gue kasih tau detailnya. Tapi yang pasti berbeda dari biasanya. Curious? 😉",
+        "Malam ini gue akan reveal sesuatu yang udah lama gue siapin. Jangan sampe ketinggalan ⚡",
+        "Ada guest star spesial malam ini. Gak bisa gue sebutin sekarang. Pokoknya seru 🔥",
+        "Kak, lo orangnya curious kan? Malam ini gue ada sesuatu yang bakal bikin lo penasaran 🎲",
+        "Bulan ini ada tema spesial. Malam ini episode pertamanya. Jangan sampe ketinggalan 🌙",
+        "Gue gak pernah bilang ini ke siapapun. Lo orang pertama yang gue kasih tau. Malam ini ✨",
+        "Kak, malam ini beda. Gue udah prepare seminggu buat ini. Trust the process 🎬",
+        "Sesuatu yang belum pernah gue lakuin sebelumnya. Tonight is the night 🌟"
       ],
       zh: [
-        "今晚8点有场特别的。来看一眼呗，说不定跟你的气场很搭。不剧透，来了就知道 😏",
-        "今晚准备了点不一样的。看了你的主页，感觉你会喜欢。8点钟，不见不散？🌙",
-        "刚看完你视频，直觉告诉我你会喜欢今晚的场子。留个悬念，8点见 ✨"
+        "今晚8点有场特别的。来看一眼呗，说不定跟你的气场很搭 😏",
+        "今晚准备了点不一样的。看了你的主页，感觉你会喜欢。不见不散 🌙",
+        "刚看完你视频，直觉告诉我你会喜欢今晚的场子。留个悬念 ✨",
+        "大哥，今晚有个惊喜，不剧透。但保证你来了不后悔 🎭",
+        "今晚的主题是你喜欢的风格。别问我怎么知道的，来了就懂了 🎪",
+        "今晚的节目单我自己都期待。应该会是你喜欢的类型 💫",
+        "大哥，你的品味我是懂的。今晚这场就是为你这类人准备的 🌿",
+        "不是什么人都适合今晚的主题。但我看你就很对路 🎯",
+        "今晚我请了个特别嘉宾。不能说名字，但绝对是你认识的 😉",
+        "在抖音混这么久，今晚这场我会记得很久。你也应该来 ⚡",
+        "大哥，直觉告诉我你会是今晚的VIP。别让我失望 🔥",
+        "今晚的内容我准备了一个月。第一批观众我想是你这样的人 🎲",
+        "你是我今天第一个邀请的人。今晚这场是为你准备的 🌙",
+        "今晚8点，有一场不一样的直播。看了我的主页你就懂 ✨",
+        "有些事情说出来就不灵了。但今晚你来了就知道。相信我 🎬",
+        "今晚我们不聊常规。来点深度的话题。你会感兴趣的 🌟"
       ],
       en: [
-        "Something special tonight at 8PM. Your vibe tells me you'd enjoy this. No spoilers — just show up 😏",
-        "Got a feeling tonight's stream matches your energy. Drop by at 8 and see for yourself 🌙",
-        "Just watched your content. Something tells me you'd vibe with tonight's show. 8PM. Be there ✨"
+        "Something special tonight at 8PM. Your vibe tells me you'd enjoy this 😏",
+        "Got a feeling tonight's stream matches your energy. Drop by and see 🌙",
+        "Just watched your content. Something tells me you'd vibe with tonight ✨",
+        "Not gonna spoil it. But tonight is different from anything I've done before 🎭",
+        "Tonight's theme was inspired by people like you. You'll see what I mean 🎪",
+        "There's a surprise guest tonight. Can't say who. But trust me, it's worth it 💫",
+        "You seem like someone who appreciates the unexpected. Tonight's for you 🎯",
+        "Tonight I'm trying something new. You should be here to witness it 🔥",
+        "If you like deep, thoughtful content, tonight's stream is made for you 🌿",
+        "First time doing this kind of stream. Want the right people in the room 🌟",
+        "Tonight's topic is something you've probably thought about. Let's discuss 🎲",
+        "Not everyone will get tonight's theme. But I think you will ⚡",
+        "Prepared something special this week. Tonight is the reveal 🎬",
+        "Your profile tells me you're curious. Tonight will satisfy that curiosity ✨",
+        "I rarely do streams like tonight's. Special audience for a special night 🌙",
+        "No spoilers. Just be there at 8. You'll thank me later 😉"
       ]
     }
   },
-
-  // ③ 趣味挑战型 — 适合 gamer / 竞技型
   challenge: {
     matchTags: ['竞技', '游戏', '车', '挑战', '互动', '电玩'],
     templates: {
       id: [
-        "Kak, lo keliatan orangnya asik banget. Berani taruhan? Kalo lo bisa nebak lagu pembuka gue nanti malem, gue kasih shoutout spesial 😂",
-        "Satu challenge kecil: coba tebak tema live gue malam ini. Yang bener dapet free request lagu. Berani? 🎮",
-        "Challenge nih: lo vs gue. Tebak berapa orang yang bakal join live gue malam ini. Paling deket menang shoutout! 🏆"
+        "Kak, keliatan orangnya asik. Berani taruhan? Tebak lagu pembuka gue nanti malem 😂",
+        "Challenge nih: lo vs gue. Tebak berapa orang yang join live gue. Paling deket menang 🏆",
+        "Kak, lo kayaknya jago nebak. Coba tebak tema live gue malam ini. Berani? 🎮",
+        "Satu challenge kecil: kalo lo bisa nebak guest gue malam ini, gue kasih shoutout 🎯",
+        "Lo keliatan kompetitif. Malam ini gue ada game. Hadiahnya spesial. Join? 🔥",
+        "Kak, gue challenge lo. Kalo lo bisa bikin gue ketawa dalam 1 menit, lo menang 😂",
+        "Siapa yang paling jago nebak? Malam ini gue bikin quiz berhadiah. Lo harus ikut 🎲",
+        "Lo vs gue, one on one. Tebak lagu yang bakal gue nyanyiin. Kalo bener, gue kasi reward ⚡",
+        "Kak, dari profile lo, gue tau lo suka tantangan. Malam ini gue ada sesuatu 🎪",
+        "Berani ambil challenge? Malam ini gue bakal test penonton. Hadiahnya gede 🏅",
+        "Lo jago main game? Malam ini gue main game yang lo pasti bisa. Ayo lawan gue 🎮",
+        "Tebak dalam 3 kali kesempatan. Kalo bener, lo dapet akses VIP gratis malam ini 🎫",
+        "Kak, lo keliatan jago. Malam ini challenge spesial. Berani taruhan kecil? 💰",
+        "Gue tantang lo. Tebak lagu pertama gue nanti malem. Lo pasti gak bakal nyangka 🎵",
+        "Satu pertanyaan: lo berani gak lawan gue di live malam ini? Taruhannya seru 😏",
+        "Challenge: kalo lo bisa jawab 3 pertanyaan gue, gue kasih hadiah spesial 🎁"
       ],
       zh: [
-        "大哥，看你主页就知道你是爱玩的人。敢不敢来我直播间打个赌？猜中我开场曲，给你专属喊麦 😂",
-        "一个小挑战：猜猜今晚我直播间多少人？赢了有惊喜。输了也得来打个招呼！🏆",
-        "看你视频就知道你不服输。今晚来直播间，给你个专属挑战，输了请你喝奶茶 😂"
+        "大哥，看你主页就知道你是爱玩的人。敢不敢打个赌？猜中开场曲有奖 😂",
+        "一个小挑战：猜猜今晚我直播间多少人？赢了有惊喜。输了也得来 🏆",
+        "看你视频就知道你不服输。今晚来直播间，给你个专属挑战 🎮",
+        "大哥，听说你什么都懂。今晚来回答我三个问题，答对有奖 🎯",
+        "不是谁都能接我的挑战。但看了你的主页，感觉你行 🔥",
+        "今晚直播间玩个游戏，第一名有专属奖励。你应该参加 🎲",
+        "大哥，敢不敢跟我比一把？题目你定，输了请客 😂",
+        "今晚有场PK赛。我看好你来参加。赢了全场喊你大哥 ⚡",
+        "你的主页透露了你是高手。今晚有个比赛，缺你这样的人才 🎪",
+        "大哥，约个挑战？今晚直播间，题目很简单但需要胆量 🏅",
+        "看你视频觉得你技术不错。今晚来展示一下，让大家看看 🎮",
+        "三条命，猜中今晚的主题。赢了VIP体验卡送你 🎫",
+        "大哥，今天有没有胆量接受我的战书？题目随你挑 💰",
+        "我赌你猜不中我今天要唱的第一首歌。赢了我给你做一个月捧场 🎵",
+        "今晚有个刺激的游戏环节。我觉得你会是冠军候选人 😏",
+        "大哥，玩个游戏？如果你赢了，我满足你一个合理要求 🎁"
       ],
       en: [
-        "You look like someone who loves a challenge. Guess my opening song tonight and win a special shoutout. Deal? 🎮",
-        "Quick bet: guess tonight's stream theme. Winner gets a free song request. You in? 😏",
-        "Your profile screams competitive. Challenge: guess my viewer count tonight. Closest wins VIP treatment! 🏆"
+        "You look like someone who loves a challenge. Guess my opening song and win 🎮",
+        "Quick bet: guess tonight's stream theme. Winner gets a free song request 😏",
+        "Your profile screams competitive. Challenge: guess my viewer count. Closest wins 🏆",
+        "One challenge: if you can guess my special guest, you get VIP treatment tonight 🎯",
+        "You vs me. 3 questions. Get them all right and you win a prize 🔥",
+        "I challenge you: make me laugh in 60 seconds. If you win, I'll do whatever you want 😂",
+        "Tonight's stream has a game element. Winner gets bragging rights and a prize 🎲",
+        "Think you can beat me? Tonight we play. Audience vs me. You should join ⚡",
+        "I've never been beaten in this game. You might be the first. Prove me wrong 🎪",
+        "One chance. Guess what's happening tonight. Get it right and I'll shout you out 🏅",
+        "You look like a gamer. Tonight I'm streaming a game you'd crush. Come play 🎮",
+        "Bet you can't guess tonight's surprise. Winner gets exclusive access 🎫",
+        "Challenge accepted? Tonight I'm taking on the audience. You first 💰",
+        "3 guesses. If you nail what I'm doing tonight, you win big 🎵",
+        "Competitive? So am I. Tonight's stream is a battle. Be there 😏",
+        "You seem like someone who doesn't back down. Tonight's challenge is for you 🎁"
       ]
     }
   },
-
-  // ④ 好奇钩子型 — 适合 beauty_dancer / 颜值类
   curiosity: {
     matchTags: ['唱歌', '弹唱', '民谣', '音乐', '乐器', '文艺', '旅行', '美食', '生活'],
     templates: {
       id: [
-        "Kak, profile lo aesthetic banget sih. Kayanya selera kita mirip deh. Nanti malem gue live, coba mampir liat vibes-nya 🌸",
-        "Dari postingan lo, kayaknya kita satu frekuensi. Malam ini gue live, mampir yuk. Gak bakal nyesel 🎵",
-        "Suka banget sama konten lo. Tenang, chill, authentic. Malam ini gue live with similar vibes. Dateng ya? 🌿"
+        "Kak, profile lo aesthetic banget. Kayanya selera kita mirip deh. Mampir malam ini 🌸",
+        "Dari postingan lo, kayaknya kita satu frekuensi. Malam ini gue live, mampir yuk 🎵",
+        "Suka banget sama konten lo. Tenang, chill, authentic. Malam ini gue live serupa 🌿",
+        "Kak, taste musik lo keren. Malam ini gue bakal nyanyi lagu favorit lo. Dateng? 🎤",
+        "Vibes lo tuh artsy gitu. Malam ini gue live dengan vibe yang sama persis 🎨",
+        "Konten lo bikin gue tenang. Malam ini gue bakal live santai kaya gitu. Cocok buat lo 🧘",
+        "Kayaknya kita punya selera yang sama. Makanan, musik, travel. Malam ini ngobrol? 🍜",
+        "Kak, lo tipe yang deep. Malam ini gue bahas topik yang lo pasti suka. Join 📚",
+        "Aesthetic lo beda dari yang lain. Malam ini tema live gue terinspirasi dari profile lo ✨",
+        "Dari cara lo posting, gue tau lo orangnya asik. Malam ini vibe-nya chill 🌙",
+        "Gue browsing profile lo dan langsung suka. Malam ini gue live, please mampir 🎭",
+        "Lo keliatan orang yang menghargai seni. Malam ini gue ada performance spesial 🎪",
+        "Kak, koleksi travel lo keren. Malam ini tema live gue tentang perjalanan. Sharing yuk ✈️",
+        "Profile lo aesthetic, konten lo meaningful. Malam ini gue live dengan vibe lo 🌈",
+        "Gue jarang liat profile seasik punya lo. Malam ini live gue bakal se-asik itu 🎯",
+        "Lo tipe orang yang gue pengen ngobrol panjang. Malam ini live gue, yuk diskusi 💬"
       ],
       zh: [
-        "大哥，你主页审美绝了。感觉我们品味很对路。今晚来直播间坐坐，保证跟你气场很搭 🌸",
-        "看了你的内容，觉得你是那种懂生活有品位的人。今晚的主题你应该会喜欢 🎵",
-        "从你视频能看出你是个有故事的人。今晚直播间，想听听你的看法。来聊聊？🌿"
+        "大哥，你主页审美绝了。感觉我们品味很对路。今晚来坐坐 🌸",
+        "看了你的内容，觉得你是那种懂生活的人。今晚的主题你应该喜欢 🎵",
+        "从你视频能看出你是个有故事的人。今晚直播间，想听听你的看法 🌿",
+        "大哥，听你的歌单就知道你有品味。今晚我唱你喜欢的歌 🎤",
+        "你的生活态度我很欣赏。不急不躁，有格调。今晚来聊聊 🎨",
+        "你发的每一条内容都很有质感。今晚我的直播也是这种风格 🧘",
+        "大哥，感觉我们的兴趣爱好很像。音乐、旅行、美食。今晚来唠唠 🍜",
+        "看你视频觉得你是个懂行的人。今晚有话题想跟你讨论 📚",
+        "你的主页给我一种很舒适的感觉。今晚直播也是这个调调 ✨",
+        "从你分享的内容能看出你的生活态度。想跟你这样的人做朋友 🌙",
+        "大哥，你是我见过的少有的有品位的人。今晚别错过 🎭",
+        "你的主页就是我的审美教科书。今晚直播风格会是你喜欢的 🎪",
+        "大哥，看你旅行的视频很治愈。今晚聊聊你去过的地方 ✈️",
+        "你的生活方式就是我向往的。今晚来直播间分享你的经验 🌈",
+        "大哥，你的内容让人感觉很真实。这样的主播不多了。今晚见 🎯",
+        "看过你很多视频，觉得我们应该能聊得来。今晚有空吗 💬"
       ],
       en: [
-        "Your profile aesthetic is on point. Feel like we share the same taste. Tonight's stream might be your vibe 🌸",
-        "From your posts, I can tell we're on the same wavelength. Drop by tonight, you won't regret it 🎵",
-        "Love your content. Chill, authentic, real. Tonight's stream has similar energy. Pull up? 🌿"
+        "Your profile aesthetic is on point. Feel like we share the same taste. Tonight 🌸",
+        "From your posts, I can tell we're on the same wavelength. Drop by tonight 🎵",
+        "Love your content. Chill, authentic, real. Tonight's stream has similar energy 🌿",
+        "Your music taste is incredible. Tonight I'm playing songs you'd love. Come listen 🎤",
+        "You have an artistic vibe. Tonight's stream is all about art and creativity 🎨",
+        "Your content brings me peace. Tonight's stream is that kind of vibe 🧘",
+        "I think we share similar interests. Music, food, travel. Let's chat tonight 🍜",
+        "You seem like a deep thinker. Tonight's topic will intrigue you 📚",
+        "Your aesthetic is unique. Tonight's stream was inspired by profiles like yours ✨",
+        "The way you post tells me you're genuine. Tonight's vibe matches that 🌙",
+        "Been browsing your profile and I'm impressed. Join my stream tonight 🎭",
+        "You appreciate art. Tonight I have a special performance planned 🎪",
+        "Your travel photos are amazing. Tonight's theme is all about journeys ✈️",
+        "Your profile is aesthetic, your content is meaningful. Tonight reflects that 🌈",
+        "Rarely find profiles as interesting as yours. Tonight's stream is your vibe 🎯",
+        "You're the type of person I'd love to have a long conversation with. Tonight? 💬"
       ]
     }
   }
 };
 
-// 标签→模板类型 映射表
+// 标签→模板类型 映射表// 标签→模板类型 映射表
 const TAG_TO_TEMPLATE = {};
 for (const [type, config] of Object.entries(COMMENT_TEMPLATES)) {
   for (const tag of config.matchTags) {
