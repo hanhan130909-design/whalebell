@@ -39,6 +39,10 @@ app.get('/index.html', (req, res) => {
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 app.get('/', (req, res) => res.redirect('/sniper.html'));
+app.get('/stats.html', (req, res) => {
+  res.set('Content-Type', 'text/html; charset=utf-8');
+  res.send(fs.readFileSync(path.join(__dirname, 'frontend', 'stats.html'), 'utf-8'));
+});
 app.get('/minimal.html', (req, res) => {
   res.set('Content-Type', 'text/html; charset=utf-8');
   res.send(fs.readFileSync(path.join(__dirname, 'frontend', 'minimal.html'), 'utf-8'));

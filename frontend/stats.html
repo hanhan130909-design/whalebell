@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>WhaleBell 统计</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Arial,sans-serif;background:#0A0A1A;color:#fff;min-height:100vh;padding:20px}
+h1{font-size:22px;margin-bottom:10px;background:linear-gradient(135deg,#FF6B9D,#FFD700);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.card{background:#16162A;border:1px solid #2A2A45;border-radius:12px;padding:14px;text-align:center}
+.card .num{font-size:28px;font-weight:800}
+.card .num.pink{color:#FF6B9D}
+.card .num.gold{color:#FFD700}
+.card .num.green{color:#00E676}
+.card .label{font-size:11px;color:#8E8EA0;margin-top:4px}
+.section{font-size:14px;font-weight:700;margin:16px 0 8px;color:#8E8EA0}
+.table{width:100%;font-size:12px}
+.table td{padding:4px 8px;border-bottom:1px solid #1A1A2E}
+.table td:last-child{text-align:right;color:#FFD700;font-weight:700}
+.refresh{text-align:center;margin-top:16px}
+.refresh button{background:rgba(255,107,157,0.15);color:#FF6B9D;border:1px solid rgba(255,107,157,0.3);padding:8px 24px;border-radius:8px;font-size:13px;cursor:pointer}
+</style></head><body>
+<h1>🐋 WhaleBell 统计面板</h1>
+<div class="grid">
+<div class="card"><div class="num pink" id="v1">-</div><div class="label">注册/登录</div></div>
+<div class="card"><div class="num gold" id="v2">-</div><div class="label">查看大哥</div></div>
+<div class="card"><div class="num green" id="v3">-</div><div class="label">复制话术</div></div>
+<div class="card"><div class="num" id="v4">-</div><div class="label">已评论</div></div>
+</div>
+<div class="section">👍👎 反馈</div>
+<table class="table"><tr><td>👍 有用</td><td id="fbUp">-</td></tr><tr><td>👎 没用</td><td id="fbDown">-</td></tr></table>
+<div class="section">🔁 回流</div>
+<table class="table">
+<tr><td>进直播间</td><td id="reEnter">-</td></tr><tr><td>点关注</td><td id="reFollow">-</td></tr><tr><td>私信</td><td id="reDM">-</td></tr><tr><td>点赞</td><td id="reLike">-</td></tr><tr><td>无回应</td><td id="reNone">-</td></tr>
+</table>
+<div class="section">💰 流水区间</div>
+<table class="table">
+<tr><td>0 IDR</td><td id="rv0">-</td></tr><tr><td>1-50K</td><td id="rv1">-</td></tr><tr><td>50-200K</td><td id="rv2">-</td></tr><tr><td>200K+</td><td id="rv3">-</td></tr>
+</table>
+<div class="refresh"><button onclick="load()">🔄 刷新</button></div>
+<script>
+var API='/api';
+async function load(){
+try{var r=await fetch(API+'/track/summary');var d=await r.json();
+document.getElementById('v1').textContent=d.totalLogins||0;
+document.getElementById('v2').textContent=d.totalViews||0;
+document.getElementById('v3').textContent=d.totalCopies||0;
+document.getElementById('v4').textContent=d.totalCommented||0;
+document.getElementById('fbUp').textContent=d.feedbackUp||0;
+document.getElementById('fbDown').textContent=d.feedbackDown||0;
+document.getElementById('reEnter').textContent=(d.responsesByType||{}).enter_room||0;
+document.getElementById('reFollow').textContent=(d.responsesByType||{}).follow_back||0;
+document.getElementById('reDM').textContent=(d.responsesByType||{}).dm||0;
+document.getElementById('reLike').textContent=(d.responsesByType||{}).like||0;
+document.getElementById('reNone').textContent=(d.responsesByType||{}).no_response||0;
+document.getElementById('rv0').textContent=(d.revenueByRange||{})['0']||0;
+document.getElementById('rv1').textContent=(d.revenueByRange||{})['1-50K']||0;
+document.getElementById('rv2').textContent=(d.revenueByRange||{})['50-200K']||0;
+document.getElementById('rv3').textContent=(d.revenueByRange||{})['200K+']||0;
+}catch(e){}
+}
+load();setInterval(load,30000);
+</script>
+</body></html>
