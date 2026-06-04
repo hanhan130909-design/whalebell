@@ -180,7 +180,7 @@ async function getWhalesFromSupabase(limit = 10, category = null, region = null)
   try {
     // Simple query, no contains() filter (encoding issues with CJK characters)
     let { data, error } = await supabase
-      .from('whale_profiles')
+      .from('whales')
       .select('*')
       .gte('level', 30)
       .order('level', { ascending: false })
