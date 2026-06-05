@@ -223,7 +223,7 @@ router.get('/track/summary', async (req, res) => {
       if (!error && rows) {
         rows.forEach(function(r) {
           var t = r.type;
-          if (t === 'login') stats.totalLogins++;
+          if (t === 'login' || !t) stats.totalLogins++;
           else if (t === 'viewWhale') stats.totalViews++;
           else if (t === 'copyScript') stats.totalCopies++;
           else if (t === 'commented') stats.totalCommented++;
