@@ -370,6 +370,19 @@ function wsMapToTarget(w) {
   };
 }
 
+
+// Filter helpers
+function hasChinese(txt) { return /[\u4e00-\u9fff]/.test(txt || ''); }
+function isFemaleWhale(w) {
+  var txt = ((w.nickname || '') + ' ' + (w.username || '')).toLowerCase();
+  var femaleWords = ['girl', 'baby', 'princess', 'queen', 'lady', 'miss', 'ibu',
+    'cewek', 'putri', 'cwe', 'woman', 'female', 'sista', 'bunda', 'mama', 'gadis',
+    'perempuan', 'cewe', 'mbak', 'beb', 'mommy', 'mom', 'wife', 'aunt', 'nenek',
+    'love', 'sis', 'sister', 'sweet', 'beauty', 'pretty', 'cantik', 'ayu', 'indah',
+    'wati'];
+  return femaleWords.some(function(w) { return txt.indexOf(w) >= 0; });
+}
+
 async function getWhalesFromSupabase(limit = 10, category = null, region = null) {
   if (!supabase) return null;
   try {
@@ -391,6 +404,9 @@ async function getWhalesFromSupabase(limit = 10, category = null, region = null)
     var preferred = data.filter(function(w) { return priority.indexOf(w.region) >= 0; });
     var others = data.filter(function(w) { return priority.indexOf(w.region) < 0; });
     data = preferred.concat(others);
+    // Gender + language filters
+    data = data.filter(function(w) { return !hasChinese(w.nickname) && !hasChinese(w.username); });
+    data = data.filter(function(w) { return !isFemaleWhale(w); });
     // Category filter
     if (category && STREAMER_CATEGORIES[category]) {
       var matchTags = STREAMER_CATEGORIES[category].targetTags;
