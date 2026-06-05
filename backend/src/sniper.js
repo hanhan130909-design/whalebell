@@ -338,7 +338,7 @@ async function getWhalesFromWhaleSense(limit) {
   var wsKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrbmxhbXd2amZ5dmV0aHFyb216Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg3Nzc4OTYsImV4cCI6MjA2NDM1Mzg5Nn0.tS36FrpNW4xMAU2RBDRf3d8Z1Q0-ocS4c__Pa6A';
   try {
     var https = require('https');
-    var u = new URL(wsUrl + '/rest/v1/whales?select=*&level=gte.30&limit=2000');
+    var u = new URL(wsUrl + '/rest/v1/whales?select=*&level=gte.20&limit=2000');
     var data = await new Promise(function(resolve, reject) {
       https.get({ hostname: u.hostname, path: u.pathname + u.search, headers: { apikey: wsKey, Authorization: 'Bearer ' + wsKey }}, function(res) {
         var body = ''; res.on('data', function(c) { body += c; }); res.on('end', function() { try { resolve(JSON.parse(body)); } catch(e) { resolve(null); } });
@@ -377,7 +377,7 @@ async function getWhalesFromSupabase(limit = 10, category = null, region = null)
     let { data, error } = await supabase
       .from('whale_profiles')
       .select('*')
-      .gte('level', 30)
+      .gte('level', 20)
       .order('level', { ascending: false })
       .range(0, 1999);
     if (error) { console.error('Supabase query error:', error.message, error.details); return null; }
@@ -459,10 +459,10 @@ router.get('/targets', async (req, res) => {
   // Try Supabase first
   var filterRegion = req.query.region || null;
   rawTargets = await getWhalesFromWhaleSense(count);
-  if (!rawTargets || rawTargets.length === 0) rawTargets = await getWhalesFromSupabase(count, category, filterRegion);
+  if (!rawTargets || rawTargets.length < 5) rawTargets = await getWhalesFromSupabase(count, category, filterRegion);
   
   // Fallback to mock
-  if (!rawTargets || rawTargets.length === 0) {
+  if (!rawTargets || rawTargets.length < 5) {
     rawTargets = TARGETS;
   } else {
     rawTargets = rawTargets.map(function(w) { return supabaseWhaleToTarget(w, language); });
