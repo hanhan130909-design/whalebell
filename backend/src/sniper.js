@@ -372,7 +372,15 @@ function wsMapToTarget(w) {
 
 
 // Filter helpers
-function hasChinese(txt) { return /[\u4e00-\u9fff]/.test(txt || ''); }
+function hasChinese(txt) {
+  if (!txt) return false;
+  for (var i = 0; i < txt.length; i++) {
+    var c = txt.charCodeAt(i);
+    // CJK Unified Ideographs + Extensions + Compatibility
+    if ((c >= 0x4E00 && c <= 0x9FFF) || (c >= 0x3400 && c <= 0x4DBF) || (c >= 0xF900 && c <= 0xFAFF) || (c >= 0x2F800 && c <= 0x2FA1F)) return true;
+  }
+  return false;
+}
 function isFemaleWhale(w) {
   var txt = ((w.nickname || '') + ' ' + (w.username || '')).toLowerCase();
   var femaleWords = ['girl', 'baby', 'princess', 'queen', 'lady', 'miss', 'ibu',
