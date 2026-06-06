@@ -4,7 +4,7 @@
 const express = require('express');
 const router = express.Router();
 const { createUser, loginUser, getUserProfile, getWhaleAlerts, getWhaleStats } = require('./database');
-const { startMonitoring, stopMonitoring, getMonitorStatus } = require('./monitor');
+const { startMonitoring, stopMonitoring, getMonitorStatus, discoverAndMonitor } = require('./monitor');
 
 // ============================================================
 // Auth Routes
@@ -82,6 +82,18 @@ router.post('/monitor/stop', async (req, res) => {
 // Get monitor status
 router.get('/monitor/status', (req, res) => {
   res.json({ rooms: getMonitorStatus() });
+});
+
+// Discover live rooms and start monitoring
+router.post('/monitor/discover', async (req, res) => {
+  try {
+    const { userId, maxRooms } = req.body;
+    if (!userId) return res.status(400).json({ error: 'userId required' });
+    const result = await discoverAndMonitor(userId, { maxRooms: maxRooms || 3 });
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ============================================================
@@ -195,35 +207,19 @@ router.post('/track/revenue', (req, res) => {
 
 // Get analytics summary (for debugging, later admin panel)
 router.get('/track/summary', async (req, res) => {
-  try {
-    var stats = {
-      totalLogins: analytics.login.length,
-      totalViews: analytics.viewWhale.length,
-      totalCopies: analytics.copyScript.length,
-      totalCommented: analytics.commented.length,
-      totalFeedback: analytics.feedback.length,
-      feedbackUp: analytics.feedback.filter(function(f){return f.vote==='up'}).length,
-      feedbackDown: analytics.feedback.filter(function(f){return f.vote==='down'}).length,
-      totalResponses: analytics.response.length,
-      enterRoom: analytics.response.filter(function(r){return r.type==='enter_room'}).length,
-      followBack: analytics.response.filter(function(r){return r.type==='follow_back'}).length,
-      dm: analytics.response.filter(function(r){return r.type==='dm'}).length,
-      like: analytics.response.filter(function(r){return r.type==='like'}).length,
-      noResponse: analytics.response.filter(function(r){return r.type==='no_response'}).length,
-      totalRevenue: analytics.revenue.length,
-      rev0: analytics.revenue.filter(function(r){return r.range==='0'}).length,
-      rev1_50: analytics.revenue.filter(function(r){return r.range==='1-50K'}).length,
-      rev50_200: analytics.revenue.filter(function(r){return r.range==='50-200K'}).length,
-      rev200: analytics.revenue.filter(function(r){return r.range==='200K+'}).length
-    };
-
-    // Merge with Supabase stored data
-    if (supabaseAnalytics) {
+  // Read ALL counts from Supabase only — survives deploys
+  var stats = { totalLogins: 0, totalViews: 0, totalCopies: 0, totalCommented: 0,
+    totalFeedback: 0, feedbackUp: 0, feedbackDown: 0, totalResponses: 0,
+    enterRoom: 0, followBack: 0, dm: 0, like: 0, noResponse: 0,
+    totalRevenue: 0, rev0: 0, rev1_50: 0, rev50_200: 0, rev200: 0 };
+  
+  if (supabaseAnalytics) {
+    try {
       var { data: rows, error } = await supabaseAnalytics.from('analytics').select('type,data');
       if (!error && rows) {
         rows.forEach(function(r) {
           var t = r.type;
-          if (t === 'login' || !t) stats.totalLogins++;
+          if (!t || t === 'login') stats.totalLogins++;
           else if (t === 'viewWhale') stats.totalViews++;
           else if (t === 'copyScript') stats.totalCopies++;
           else if (t === 'commented') stats.totalCommented++;
@@ -249,23 +245,19 @@ router.get('/track/summary', async (req, res) => {
           }
         });
       }
-    }
-
-    res.json({
-      totalLogins: stats.totalLogins, totalViews: stats.totalViews, totalCopies: stats.totalCopies,
-      totalCommented: stats.totalCommented, totalFeedback: stats.totalFeedback,
-      feedbackUp: stats.feedbackUp, feedbackDown: stats.feedbackDown,
-      totalResponses: stats.totalResponses,
-      responsesByType: {
-        enter_room: stats.enterRoom, follow_back: stats.followBack, dm: stats.dm,
-        like: stats.like, no_response: stats.noResponse
-      },
-      totalRevenueReports: stats.totalRevenue,
-      revenueByRange: { '0': stats.rev0, '1-50K': stats.rev1_50, '50-200K': stats.rev50_200, '200K+': stats.rev200 }
-    });
-  } catch(e) {
-    res.json({ totalLogins: analytics.login.length, totalViews: 0, totalCopies: 0, totalCommented: 0, totalFeedback: 0, feedbackUp: 0, feedbackDown: 0, totalResponses: 0, responsesByType: {}, totalRevenueReports: 0, revenueByRange: {} });
+    } catch(e) { console.error('Summary Supabase error:', e.message); }
   }
-});
 
-module.exports = router;
+  res.json({
+    totalLogins: stats.totalLogins, totalViews: stats.totalViews, totalCopies: stats.totalCopies,
+    totalCommented: stats.totalCommented, totalFeedback: stats.totalFeedback,
+    feedbackUp: stats.feedbackUp, feedbackDown: stats.feedbackDown,
+    totalResponses: stats.totalResponses,
+    responsesByType: {
+      enter_room: stats.enterRoom, follow_back: stats.followBack, dm: stats.dm,
+      like: stats.like, no_response: stats.noResponse
+    },
+    totalRevenueReports: stats.totalRevenue,
+    revenueByRange: { '0': stats.rev0, '1-50K': stats.rev1_50, '50-200K': stats.rev50_200, '200K+': stats.rev200 }
+  });
+});module.exports = router;
