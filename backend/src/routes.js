@@ -19,7 +19,7 @@ router.post('/auth/register', async (req, res) => {
     }
     const data = await createUser(email, password, displayName);
     res.json({ user: data.user, session: data.session });
-    analytics.login.push({ userId: data.user.id, timestamp: new Date().toISOString(), type: 'register' }); saveAnalytics();
+    analytics.login.push({ userId: data.user.id, timestamp: new Date().toISOString(), type: 'register' }); saveAnalytics('login', { userId: data.user.id });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -34,7 +34,7 @@ router.post('/auth/login', async (req, res) => {
     }
     const data = await loginUser(email, password);
     res.json({ user: data.user, session: data.session });
-    analytics.login.push({ userId: data.user.id, timestamp: new Date().toISOString(), type: 'login' }); saveAnalytics();
+    analytics.login.push({ userId: data.user.id, timestamp: new Date().toISOString(), type: 'login' }); saveAnalytics('login', { userId: data.user.id });
   } catch (err) {
     res.status(401).json({ error: err.message });
   }
@@ -154,28 +154,28 @@ async function saveAnalytics(type, data) {
 // Track login
 router.post('/track/login', (req, res) => {
   const { userId } = req.body;
-  analytics.login.push({ userId: userId || 'anon', timestamp: new Date().toISOString() }); saveAnalytics('login', { userId: userId || 'anon' });
+  saveAnalytics('login', { userId: userId || 'anon', timestamp: new Date().toISOString() }); saveAnalytics('login', { userId: userId || 'anon' });
   res.json({ success: true, totalLogins: analytics.login.length });
 });
 
 // Track whale view (点击查看金主)
 router.post('/track/view', (req, res) => {
   const { userId, whaleId } = req.body;
-  saveAnalytics(); analytics.viewWhale.push({ userId: userId || 'anon', whaleId, timestamp: new Date().toISOString() });
+  saveAnalytics(); saveAnalytics('viewWhale', { userId: userId || 'anon', whaleId, timestamp: new Date().toISOString() });
   res.json({ success: true });
 });
 
 // Track copy script (复制话术)
 router.post('/track/copy', (req, res) => {
   const { userId, whaleId, script } = req.body;
-  saveAnalytics(); analytics.copyScript.push({ userId: userId || 'anon', whaleId, script: (script||'').substring(0,100), timestamp: new Date().toISOString() });
+  saveAnalytics(); saveAnalytics('copyScript', { userId: userId || 'anon', whaleId, script: (script||'').substring(0,100), timestamp: new Date().toISOString() });
   res.json({ success: true });
 });
 
 // Track commented (已评论)
 router.post('/track/commented', (req, res) => {
   const { userId, whaleId } = req.body;
-  saveAnalytics(); analytics.commented.push({ userId: userId || 'anon', whaleId, timestamp: new Date().toISOString() });
+  saveAnalytics(); saveAnalytics('commented', { userId: userId || 'anon', whaleId, timestamp: new Date().toISOString() });
   res.json({ success: true });
 });
 
@@ -183,7 +183,7 @@ router.post('/track/commented', (req, res) => {
 router.post('/track/feedback', (req, res) => {
   const { userId, whaleId, vote } = req.body;
   if (!vote || !['up','down'].includes(vote)) return res.status(400).json({ error: 'vote must be up or down' });
-  saveAnalytics(); analytics.feedback.push({ userId: userId || 'anon', whaleId, vote, timestamp: new Date().toISOString() });
+  saveAnalytics(); saveAnalytics('feedback', { userId: userId || 'anon', whaleId, vote, timestamp: new Date().toISOString() });
   res.json({ success: true });
 });
 
@@ -192,7 +192,7 @@ router.post('/track/response', (req, res) => {
   const { userId, whaleId, type } = req.body;
   const valid = ['no_response','like','follow_back','dm','enter_room'];
   if (!type || !valid.includes(type)) return res.status(400).json({ error: 'invalid response type' });
-  saveAnalytics(); analytics.response.push({ userId: userId || 'anon', whaleId, type, timestamp: new Date().toISOString() });
+  saveAnalytics(); saveAnalytics('response', { userId: userId || 'anon', whaleId, type, timestamp: new Date().toISOString() });
   res.json({ success: true });
 });
 
@@ -201,7 +201,7 @@ router.post('/track/revenue', (req, res) => {
   const { userId, whaleId, range } = req.body;
   const valid = ['0','1-50K','50-200K','200K+'];
   if (!range || !valid.includes(range)) return res.status(400).json({ error: 'invalid revenue range' });
-  saveAnalytics(); analytics.revenue.push({ userId: userId || 'anon', whaleId, range, timestamp: new Date().toISOString() });
+  saveAnalytics(); saveAnalytics('revenue', { userId: userId || 'anon', whaleId, range, timestamp: new Date().toISOString() });
   res.json({ success: true });
 });
 
