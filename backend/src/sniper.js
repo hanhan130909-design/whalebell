@@ -313,6 +313,42 @@ function getLangForRegion(regionStr) {
   return 'id'; // default Indonesian/Malay for SEA
 }
 
+
+// Video-type-specific comment templates
+const VIDEO_COMMENTS = {
+  lifestyle: {
+    id: ["Kak, vibes konten lo chill banget. Gue suka aesthetic lo yang natural gini 🌿", "Postingan lo bikin gue tenang. Jarang ada yang se-authentic ini. Respect! ✨", "Gaya hidup lo goals banget. Simple tapi meaningful. Love it 💯"],
+    zh: ["大哥，你的生活状态太让人羡慕了。不急不躁，有格调 🌿", "你的每一条内容都很有质感。这种生活方式就是我的理想 ✨", "看了你的主页，觉得你是真正懂生活的人。敬佩 💯"],
+    en: ["Your lifestyle content is so chill. Love the natural, authentic vibe 🌿", "Your posts bring peace. Rare to find content this genuine. Respect! ✨", "Your lifestyle is goals. Simple yet meaningful. Love it 💯"]
+  },
+  game: {
+    id: ["Bang, gameplay lo gila sih! Gue nonton ampe berapa kali. Jago banget 🎮", "Skill lo di game ini gak main-main. Respect dari sesama gamer 👊", "Kak, lo main game kaya pro player. Boleh minta tips? 🔥"],
+    zh: ["大哥，你游戏操作太秀了。看了好几遍，真的服 🎮", "你这技术不打职业可惜了。真心佩服 👊", "兄弟你这波操作我看傻了。教教我呗 🔥"],
+    en: ["Your gameplay is insane! Watched it multiple times. So skilled 🎮", "That's pro-level gaming right there. Respect from a fellow gamer 👊", "Bro your moves are crazy. Teach me your ways 🔥"]
+  },
+  music: {
+    id: ["Kak, suara lo enak banget. Bikin merinding dengernya. Bakat! 🎵", "Gue puter lagu lo berkali-kali. Vibes-nya dapet banget. Lanjutin! 🎤", "Musik lo tuh beda level. Jarang ada yang se-bermusikalisasi ini ✨"],
+    zh: ["大哥，你这嗓子绝了。听了好几遍，真的被圈粉 🎵", "你的音乐品味真的在线。期待更多作品 🎤", "这首歌我循环了一天。太有感觉了 ✨"],
+    en: ["Your voice is incredible. Gave me chills. Pure talent 🎵", "Been replaying your music. The vibes are unmatched. Keep going! 🎤", "Your music is on another level. Rare to find this kind of artistry ✨"]
+  },
+  beauty: {
+    id: ["Kak, makeup lo flawless banget. Skill-nya professional level 💄", "Beauty content lo selalu inspiring. Detail-nya gak main-main ✨", "Glow up goals! Selalu excited liat postingan lo 🌸"],
+    zh: ["你的妆容太精致了，专业级别 💄", "每次看你的美妆内容都有新灵感 ✨", "颜值在线，审美在线，太会了 🌸"],
+    en: ["Your makeup skills are flawless. Professional level 💄", "Your beauty content is always inspiring. The details are everything ✨", "Glow up goals! Always excited to see your posts 🌸"]
+  },
+  comedy: {
+    id: ["Kak, konten lo bikin gue ngakak. Hari gue langsung cerah gara-gara lo 😂", "Sense of humor lo gak ada lawan. Setiap video selalu fresh dan lucu 💀", "Lo adalah alasan gue buka TikTok tiap hari. Gak pernah gagal bikin ketawa 🔥"],
+    zh: ["大哥，你的视频笑死我了。治愈了我一天的疲惫 😂", "你的幽默感太强了，每个视频都让我笑出声 💀", "你就是我每天打开抖音的理由 🔥"],
+    en: ["Your content cracks me up. Brightens my entire day 😂", "Your sense of humor is unmatched. Every video is fresh and funny 💀", "You're the reason I open TikTok daily. Never fails to make me laugh 🔥"]
+  }
+};
+
+function getVideoComment(videoType, lang) {
+  var templates = VIDEO_COMMENTS[videoType] || VIDEO_COMMENTS.lifestyle;
+  var comments = templates[lang] || templates.id || templates.id;
+  return comments[Math.floor(Math.random() * comments.length)];
+}
+
 function getDeepLinks(username) {
   return {
     profile: `tiktok://user/${username}`,
@@ -433,7 +469,8 @@ async function getWhalesFromSupabase(limit = 10, category = null, region = null)
 
 function supabaseWhaleToTarget(w, lang) {
   var whaleLang = getLangForRegion(w.region) || lang || 'id';
-  const template = matchTemplate(w.tags || ['high_level'], whaleLang);
+  var template = matchTemplate(w.tags || ['high_level'], whaleLang);
+  if (w.video_type && w.video_type !== 'unknown') { var vc = getVideoComment(w.video_type, whaleLang); if (vc) template.comment = vc; }
   const links = getDeepLinks(w.username);
   return {
     id: w.id, username: w.username, nickname: w.nickname || w.username,
@@ -606,8 +643,10 @@ router.post('/comment', (req, res) => {
 // 🎯 猎杀模式 — 每次只推1个精选金主
 // ============================================================
 router.get('/hunt', async (req, res) => {
-  var raw = await getWhalesFromSupabase(20) || await getWhalesFromWhaleSense(20);
+  var raw = await getWhalesFromSupabase(50) || await getWhalesFromWhaleSense(50);
   if (!raw || raw.length === 0) return res.json({ error: 'No whales available' });
+  // Exclude unknown/empty profiles
+  raw = raw.filter(function(w) { return !w.video_type || w.video_type !== 'unknown'; });
 
   // Score each whale
   var scored = raw.map(function(w) {
