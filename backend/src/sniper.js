@@ -601,4 +601,93 @@ router.post('/comment', (req, res) => {
   res.json(result);
 });
 
+
+// ============================================================
+// 🎯 猎杀模式 — 每次只推1个精选金主
+// ============================================================
+router.get('/hunt', async (req, res) => {
+  var raw = await getWhalesFromSupabase(20) || await getWhalesFromWhaleSense(20);
+  if (!raw || raw.length === 0) return res.json({ error: 'No whales available' });
+
+  // Score each whale
+  var scored = raw.map(function(w) {
+    var score = 0;
+    var level = w.level || 0;
+    var gifts = w.total_coins || w.total_gifts || 0;
+    var region = w.region || '';
+    
+    // Base score: level + spending
+    score += level * 10;
+    if (gifts > 100000000) score += 100;
+    else if (gifts > 50000000) score += 60;
+    else if (gifts > 10000000) score += 30;
+    else if (gifts > 0) score += 10;
+    
+    // Region bonus
+    if (region === 'ID' || region.indexOf('印度') >= 0 || region.indexOf('印尼') >= 0) score += 20;
+    if (region === 'MY' || region.indexOf('马来') >= 0) score += 15;
+    
+    // Exclude Chinese names (checks applied upstream)
+    
+    return { whale: w, score: score };
+  });
+  
+  // Pick the top one
+  scored.sort(function(a, b) { return b.score - a.score; });
+  var top = scored[0].whale;
+
+  // Build profile
+  var gifts = top.total_coins || top.total_gifts || 0;
+  var spendLevel = gifts > 100000000 ? '💎💎💎💎💎 超级鲸鱼' :
+                   gifts > 50000000 ? '💎💎💎💎 重量级' :
+                   gifts > 10000000 ? '💎💎💎 大金主' :
+                   gifts > 0 ? '💎💎 潜力股' : '💎 观察中';
+  
+  var roomType = '综合';
+  var room = top.source_room || '';
+  if (/dance|dansa|dancer/i.test(room)) roomType = '舞蹈类';
+  else if (/sing|song|music|nyanyi/i.test(room)) roomType = '唱歌类';
+  else if (/game|gaming/i.test(room)) roomType = '游戏类';
+  else if (/talk|chat|borak/i.test(room)) roomType = '聊天类';
+  else if (/beauty|cantik/i.test(room)) roomType = '颜值类';
+  
+  var activeHint = '全天活跃';
+  var lastSeen = top.last_seen || '';
+  if (lastSeen) {
+    var hours = new Date().getHours();
+    if (hours >= 20 || hours <= 2) activeHint = '🌙 夜间活跃型（习惯晚上出没）';
+    else if (hours >= 10 && hours <= 18) activeHint = '☀️ 白天活跃型';
+  }
+  
+  var style = '未知';
+  var chatCount = top.chat_count || 0;
+  var likeCount = top.like_count || 0;
+  if (chatCount > 0 && likeCount > 0) style = '💬 爱聊天也爱点赞，互动型金主';
+  else if (chatCount > 0) style = '💬 喜欢聊天互动';
+  else if (gifts > 50000000) style = '💰 低调土豪型，出手大方但不爱说话';
+
+  res.json({
+    success: true,
+    target: {
+      username: top.username,
+      nickname: top.nickname || top.username,
+      level: top.level || 0,
+      region: top.region || '未知',
+      profile: {
+        spendLevel: spendLevel,
+        totalGifts: gifts,
+        roomPreference: roomType,
+        activeTime: activeHint,
+        interactionStyle: style,
+        lastSeen: lastSeen,
+        roomEnters: top.room_enter_count || top.roomsVisited || 0,
+        alertCount: top.alert_count || 0
+      },
+      comment: matchTemplate(top.tags || ['high_level'], getLangForRegion(top.region)).comment,
+      videoUrl: top.videoUrl || ('https://www.tiktok.com/@' + top.username),
+      deepLinks: getDeepLinks(top.username)
+    }
+  });
+});
+
 module.exports = router;
