@@ -22,7 +22,7 @@ button.submit{width:100%;padding:12px;border-radius:8px;font-size:14px;font-weig
 <div class="lang">
 <button id="lzh" onclick="setL('zh')">中文</button>
 <button id="len" onclick="setL('en')">EN</button>
-<button id="lid" class="active" onclick="setL('id')">ID</button>
+<button id="lid" class="active" class="active" onclick="setL('id')">ID</button>
 </div>
 <div class="error" id="err"></div>
 <input id="email" type="email" placeholder="邮箱">
@@ -63,7 +63,7 @@ if(d.session){localStorage.setItem('wb_token',d.session.access_token);localStora
 else showErr(d.error||t('errNet'))
 }catch(x){showErr(t('errNet'))}
 }
-applyL();
+applyL(); setL('id');
 // Check if already logged in
 if(localStorage.getItem('wb_token'))window.location.href='/sniper.html';
 </script></body></html>
