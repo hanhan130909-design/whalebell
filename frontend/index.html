@@ -20,9 +20,9 @@ button.submit{width:100%;padding:12px;border-radius:8px;font-size:14px;font-weig
 <h1>🐋 WhaleBell</h1>
 <div class="sub" id="slogan">开播前狙击大哥，锁定你的流水</div>
 <div class="lang">
-<button id="lzh" class="active" onclick="setL('zh')">中文</button>
+<button id="lzh" onclick="setL('zh')">中文</button>
 <button id="len" onclick="setL('en')">EN</button>
-<button id="lid" onclick="setL('id')">ID</button>
+<button id="lid" class="active" onclick="setL('id')">ID</button>
 </div>
 <div class="error" id="err"></div>
 <input id="email" type="email" placeholder="邮箱">
@@ -32,7 +32,7 @@ button.submit{width:100%;padding:12px;border-radius:8px;font-size:14px;font-weig
 <div class="toggle"><span id="togText">还没有账号？</span> <a id="togBtn" onclick="toggle()">注册</a></div>
 </div>
 <script>
-var L='zh',isLogin=true,API='/api';
+var L='id',isLogin=true,API='/api';
 var T={
 zh:{slogan:'开播前狙击大哥，锁定你的流水',email:'邮箱',name:'昵称',pass:'密码',login:'登录',reg:'注册',noAcc:'还没有账号？',hasAcc:'已有账号？',swReg:'注册',swLogin:'登录',errEmail:'请填写邮箱和密码',errNet:'网络错误'},
 en:{slogan:'Snipe whales before streaming',email:'Email',name:'Nickname',pass:'Password',login:'Login',reg:'Register',noAcc:"Don't have an account?",hasAcc:'Already have an account?',swReg:'Register',swLogin:'Login',errEmail:'Please fill email and password',errNet:'Network error'},
