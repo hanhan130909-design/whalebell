@@ -423,7 +423,10 @@ function isFemaleWhale(w) {
     'cewek', 'putri', 'cwe', 'woman', 'female', 'sista', 'bunda', 'mama', 'gadis',
     'perempuan', 'cewe', 'mbak', 'beb', 'mommy', 'mom', 'wife', 'aunt', 'nenek',
     'love', 'sis', 'sister', 'sweet', 'beauty', 'pretty', 'cantik', 'ayu', 'indah',
-    'wati'];
+    'wati', 'sari', 'dewi', 'ratna', 'ratih', 'bella', 'cinta', 'kasih', 'sayang',
+    'imut', 'manis', 'gemoy', 'gemas', 'lucu', 'cute', 'angel', 'honey', 'sayang',
+    'neng', 'teteh', 'kakak', 'uni', 'bidadari', 'cinderella', 'barbie', 'selvi',
+    'selvi', 'nita', 'ita', 'yanti', 'wati', 'sih', 'lia', 'lia', 'ani'];
   return femaleWords.some(function(w) { return txt.indexOf(w) >= 0; });
 }
 
