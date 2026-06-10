@@ -80,7 +80,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 </style>
 </head><body>
 <div class="header"><button class="logout" onclick="logout()">退出</button><h1>🐋 WhaleBell</h1><div class="badge" id="badge">🎯 化妆间狙击</div><div class="timer" id="timer">30:00</div><div class="timer-sub" id="timerSub">化妆准备时间</div>
-<div class="lang"><button class="active" id="lzh" onclick="setL('zh')">中文</button><button id="len" onclick="setL('en')">EN</button><button id="lid" class="active" onclick="setL('id')">ID</button></div></div>
+<div class="lang"><button class="active" id="lzh" onclick="setL('zh')">中文</button><button id="len" onclick="setL('en')">EN</button><button id="lid" class="active" class="active" onclick="setL('id')">ID</button></div></div>
 
 <div class="stats"><div class="stat"><div class="v" id="statTotal">-</div><div class="l" id="lblTotal">目标总数</div></div><div class="stat"><div class="v" id="statDone">0</div><div class="l" id="lblDone">已完成</div></div><div class="stat"><div class="v gold" id="statMax">-</div><div class="l" id="lblMax">最高等级</div></div></div>
 
@@ -286,7 +286,7 @@ var revKey=w.id+'_rev',revVal=revenues[revKey]||'';
 var respOpen=respVal?' show':'';
 var revOpen=revVal?' show':'';
 
-h+='<div class="card"><div class="row"><div class="av">'+e+'</div><div class="info"><div class="name">'+name+'<span class="lv">LV'+w.level+'</span></div><div class="uname">@'+w.username+'</div><div class="tags">'+tags.map(function(tg){return '<span class="tag">'+tt(tg)+'</span>'}).join('')+(w.persona?'<span class="tag persona">'+tt(w.persona)+'</span>':'')+'<span class="tag" style="background:rgba(255,215,0,0.12);color:#FFD700">'+tp+'</span></div><div class="meta"><span>📍 '+region+'</span><span>💰 '+(coins>0?(coins>=1000?(coins/1000).toFixed(1)+'K':coins):'N/A')+'</span><span>🟢 Online</span></div><div class="comment">" '+(w.comment||'').substring(0,80)+'...\"</div>';
+h+='<div class="card"><div class="row"><div class="av">'+e+'</div><div class="info"><div class="name">'+name+'<span class="lv">LV'+w.level+'</span></div><div class="uname">@'+w.username+'</div><div class="tags">'+tags.map(function(tg){return '<span class="tag">'+tt(tg)+'</span>'}).join('')+(w.persona?'<span class="tag persona">'+tt(w.persona)+'</span>':'')+'<span class="tag" style="background:rgba(255,215,0,0.12);color:#FFD700">'+tp+'</span></div><div class="meta"><span>📍 '+tr(region)+'</span><span>💰 '+(coins>0?(coins>=1000?(coins/1000).toFixed(1)+'K':coins):'N/A')+'</span><span>🟢 Online</span></div><div class="comment">" '+(w.comment||'').substring(0,80)+'...\"</div>';
 
 // Action buttons row
 h+='<div class="btns">';
