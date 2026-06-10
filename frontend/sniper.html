@@ -232,7 +232,7 @@ function showRevenueModal(whaleId) {
 async function loadWhales(){
 var btn=document.getElementById('refreshBtn');btn.classList.add('loading');
 try{
-var url=API+'/sniper/targets?lang='+L+'&limit=20';
+var url=API+'/sniper/targets?lang='+L+'&limit=30';
 if(cat)url+='&category='+cat;
 if(reg)url+='&region='+encodeURIComponent(reg);
 url+='&_='+Date.now();var r=await fetch(url);var d=await r.json();

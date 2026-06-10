@@ -32,7 +32,7 @@ function initUser(userId) {
   }
   if (!quotas.has(userId)) {
     quotas.set(userId, {
-      dailyQuota: 10,
+      dailyQuota: 15,
       used: 0,
       premium: false,
       premiumExpiry: null,
