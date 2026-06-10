@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>WhaleSense · 金主监控</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#080c12;--surface:#111820;--border:#1e293b;--text:#e2e8f0;--muted:#64748b;--accent:#3b82f6;--gold:#f59e0b;--green:#22c55e;--red:#ef4444;--purple:#a855f7}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;min-height:100vh;font-size:14px}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar h1{font-size:16px;font-weight:700;letter-spacing:-0.3px}
+.topbar h1 span{color:var(--gold)}
+.status-row{display:flex;align-items:center;gap:12px;font-size:12px}
+.status-dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.status-dot.online{background:var(--green);box-shadow:0 0 6px var(--green)}
+.status-dot.offline{background:var(--red)}
+.metric-badge{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:3px 10px;display:flex;align-items:center;gap:5px}
+.metric-badge .val{font-weight:600;color:var(--accent)}
+.lang-switcher{display:flex;gap:4px;margin-left:12px}
+.lang-btn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:3px 8px;border-radius:4px;font-size:11px;cursor:pointer;transition:all .2s}
+.lang-btn:hover,.lang-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+.layout{display:grid;grid-template-columns:280px 1fr;min-height:calc(100vh - 52px)}
+.sidebar{background:var(--surface);border-right:1px solid var(--border);padding:20px;overflow-y:auto}
+.main{padding:24px;overflow-y:auto}
+
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 20px}
+.stat-card .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px}
+.stat-card .num{font-size:32px;font-weight:700;line-height:1}
+.stat-card .sub{font-size:11px;color:var(--muted);margin-top:4px}
+
+.level-bars{margin-bottom:24px}
+.level-bars h3{font-size:13px;color:var(--muted);margin-bottom:12px;font-weight:500;text-transform:uppercase;letter-spacing:0.5px}
+.bar-row{display:flex;align-items:center;margin-bottom:6px;gap:8px}
+.bar-label{width:44px;font-size:11px;color:var(--muted);text-align:right;flex-shrink:0}
+.bar-track{flex:1;height:6px;background:var(--bg);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width .4s}
+.bar-fill.l50{background:var(--red)}.bar-fill.l40{background:#f87171}.bar-fill.l30{background:var(--gold)}.bar-fill.l20{background:var(--accent)}.bar-fill.l10{background:var(--green)}
+.bar-count{width:32px;font-size:11px;color:var(--muted);flex-shrink:0}
+
+.room-feed h3{font-size:13px;color:var(--muted);margin-bottom:12px;font-weight:500;text-transform:uppercase;letter-spacing:0.5px}
+.room-list{font-size:12px;max-height:400px;overflow-y:auto}
+.room-item{display:flex;align-items:center;justify-content:space-between;padding:5px 8px;border-radius:4px;margin-bottom:2px;cursor:pointer}
+.room-item:hover{background:var(--bg)}
+.room-item.active{background:var(--accent);color:#fff}
+.room-item .rm{color:var(--text);font-family:monospace;font-size:12px}
+.room-item .rc{color:var(--muted);font-size:11px}
+.room-item.active .rm,.room-item.active .rc{color:#fff}
+
+.toolbar{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.toolbar input,.toolbar select{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:6px;font-size:13px;outline:none}
+.toolbar input:focus,.toolbar select:focus{border-color:var(--accent)}
+.toolbar input[type=text]{width:160px}
+.toolbar button{background:var(--accent);color:#fff;border:none;padding:7px 16px;border-radius:6px;font-size:13px;cursor:pointer;font-weight:500}
+.toolbar button:hover{opacity:.9}
+.toolbar .count{color:var(--muted);font-size:12px;margin-left:auto}
+
+table{width:100%;border-collapse:collapse}
+thead th{text-align:left;padding:10px 12px;color:var(--muted);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);cursor:pointer;user-select:none}
+thead th:hover{color:var(--accent)}
+tbody td{padding:9px 12px;border-bottom:1px solid var(--border);font-size:13px}
+tbody tr:hover{background:var(--surface)}
+.user-cell{display:flex;align-items:center;gap:8px}
+.avatar{width:28px;height:28px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);flex-shrink:0;overflow:hidden}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.user-info{display:flex;flex-direction:column;gap:1px}
+.user-link{color:var(--text);text-decoration:none;font-weight:500}
+.user-link:hover{color:var(--accent);text-decoration:underline}
+.user-nick{font-size:11px;color:var(--muted);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lv-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-weight:700;font-size:12px;min-width:34px;text-align:center}
+.lv-badge.l50{background:rgba(239,68,68,0.2);color:var(--red)}
+.lv-badge.l40{background:rgba(248,113,113,0.2);color:#f87171}
+.lv-badge.l30{background:rgba(245,158,11,0.2);color:var(--gold)}
+.lv-badge.l20{background:rgba(59,130,246,0.2);color:var(--accent)}
+.lv-badge.l10{background:rgba(34,197,94,0.2);color:var(--green)}
+.gift-val{font-family:monospace;color:var(--gold)}
+.region-badge{font-size:10px;color:var(--muted);background:var(--bg);padding:1px 6px;border-radius:3px;border:1px solid var(--border)}
+.time-cell{color:var(--muted);font-size:12px}
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
+
+.pagination{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:20px;padding:12px;background:var(--surface);border-radius:8px}
+.pagination button{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px}
+.pagination button:hover:not(:disabled){border-color:var(--accent)}
+.pagination button:disabled{opacity:.4;cursor:not-allowed}
+.pagination span{color:var(--muted);font-size:13px}
+
+@media(max-width:900px){
+  .layout{grid-template-columns:1fr}
+  .sidebar{display:none;position:fixed;top:52px;left:0;width:280px;height:calc(100vh - 52px);z-index:200;box-shadow:2px 0 8px rgba(0,0,0,.5)}
+  .sidebar.show{display:block}
+  .menu-btn{display:block!important}
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.pulse{animation:pulse 2s infinite}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div style="display:flex;align-items:center">
+    <button id="menuToggle" class="menu-btn" style="display:none;background:transparent;border:1px solid var(--border);color:var(--text);padding:5px 10px;border-radius:4px;cursor:pointer;margin-right:12px">☰</button>
+    <h1>🐋 Whale<span>Sense</span></h1>
+  </div>
+  <div class="status-row">
+    <div class="metric-badge">
+      <span class="status-dot" id="realtimeDot"></span>
+      <span data-i18n="realtime">实时</span>
+    </div>
+    <div class="metric-badge">
+      🐋 <span class="val" id="whaleCount">0</span> <span data-i18n="whales">金主</span>
+    </div>
+    <span style="color:var(--muted);font-size:11px" id="clock">--</span>
+    <div class="lang-switcher">
+      <button class="lang-btn active" data-lang="zh" onclick="setLang('zh')">中文</button>
+      <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" data-lang="id" onclick="setLang('id')">ID</button>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="level-bars">
+      <h3 data-i18n="level_dist">等级分布</h3>
+      <div id="levelBars"></div>
+    </div>
+    <div class="room-feed">
+      <h3 data-i18n="active_rooms">活跃房间</h3>
+      <div class="room-list" id="roomList"></div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="stat-grid" id="statsGrid"></div>
+
+    <div class="toolbar">
+      <input type="text" id="searchInput" placeholder="搜索用户名...">
+      <select id="minLevel">
+        <option value="">全部等级</option>
+        <option value="50">LV50+</option>
+        <option value="40">LV40+</option>
+        <option value="30">LV30+</option>
+        <option value="20">LV20+</option>
+        <option value="10">LV10+</option>
+      </select>
+      <select id="regionFilter">
+        <option value="" data-i18n="all_regions">全部地区</option>
+      </select>
+      <select id="sortBy">
+        <option value="last_seen">最近活跃</option>
+        <option value="level">等级</option>
+        <option value="total_gifts">礼物数</option>
+      </select>
+      <button onclick="loadData()" data-i18n="refresh">刷新</button>
+      <span class="count" id="resultCount"></span>
+    </div>
+
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="changeSort('username')" data-i18n="user">用户</th>
+            <th onclick="changeSort('level')" data-i18n="level">等级</th>
+            <th onclick="changeSort('total_gifts')" data-i18n="gifts">礼物</th>
+            <th data-i18n="region">地区</th>
+            <th data-i18n="room">房间</th>
+            <th onclick="changeSort('last_seen')" data-i18n="last_active">最近活跃</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <tr><td colspan="6" class="empty-state">加载中...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination" id="pagination"></div>
+  </main>
+</div>
+
+<script>
+// ========== 多语言 ==========
+const i18n = {
+  zh: {
+    realtime: '实时', whales: '金主', level_dist: '等级分布', active_rooms: '活跃房间',
+    user: '用户', level: '等级', gifts: '礼物', region: '地区', room: '房间', last_active: '最近活跃',
+    refresh: '刷新', search: '搜索用户名...', all_regions: '全部地区',
+    total_users: '总用户', super_whales: '超级大哥', active_1h: '1小时活跃',
+    just_now: '刚刚', minutes_ago: '分钟前', hours_ago: '小时前', days_ago: '天前',
+    no_data: '暂无数据', loading: '加载中...'
+  },
+  en: {
+    realtime: 'Live', whales: 'Whales', level_dist: 'Level Dist.', active_rooms: 'Active Rooms',
+    user: 'User', level: 'Level', gifts: 'Gifts', region: 'Region', room: 'Room', last_active: 'Last Active',
+    refresh: 'Refresh', search: 'Search username...', all_regions: 'All Regions',
+    total_users: 'Total Users', super_whales: 'Super Whales', active_1h: 'Active 1h',
+    just_now: 'Just now', minutes_ago: 'min ago', hours_ago: 'h ago', days_ago: 'd ago',
+    no_data: 'No data', loading: 'Loading...'
+  },
+  id: {
+    realtime: 'Langsung', whales: 'Whale', level_dist: 'Dist. Level', active_rooms: 'Ruang Aktif',
+    user: 'Pengguna', level: 'Level', gifts: 'Hadiah', region: 'Wilayah', room: 'Ruang', last_active: 'Terakhir Aktif',
+    refresh: 'Segarkan', search: 'Cari username...', all_regions: 'Semua Wilayah',
+    total_users: 'Total Pengguna', super_whales: 'Super Whale', active_1h: 'Aktif 1j',
+    just_now: 'Baru saja', minutes_ago: 'mnt lalu', hours_ago: 'jam lalu', days_ago: 'hari lalu',
+    no_data: 'Tidak ada data', loading: 'Memuat...'
+  }
+};
+
+let currentLang = 'zh';
+
+function setLang(lang) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (i18n[lang][key]) el.textContent = i18n[lang][key];
+  });
+  // 重新加载数据以更新界面
+  loadData();
+}
+
+function t(key) {
+  return i18n[currentLang][key] || key;
+}
+
+// ========== Supabase ==========
+const SUPABASE_URL = 'https://kknlamwvjfyvethqromz.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrbmxhbXd2amZ5dmV0aHFyb216Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3ODIzMjQsImV4cCI6MjA5NTM1ODMyNH0.5VseUq30ECnbVbhVtq94l56-G35BtVlSScS4c__Pa6A';
+
+const supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ========== 状态 ==========
+let currentPage = 1;
+let totalCount = 0;
+let currentSort = 'last_seen';
+let sortAsc = false;
+const pageSize = 50;
+
+// ========== 初始化 ==========
+document.addEventListener('DOMContentLoaded', () => {
+  loadRegions();  // 动态加载地区列表
+  loadData();
+  setupRealtime();
+  setupFilters();
+  updateClock();
+  setInterval(updateClock, 1000);
+});
+
+// ========== 动态加载地区列表 ==========
+async function loadRegions() {
+  try {
+    const res = await fetch(API_BASE + '/api/regions');
+    const data = await res.json();
+    const regions = data.regions || [];
+    const sel = document.getElementById('regionFilter');
+    // 保留"全部地区"选项
+    sel.innerHTML = '<option value="">全部地区</option>';
+    regions.forEach(r => {
+      const opt = document.createElement('option');
+      opt.value = r;
+      opt.textContent = r;
+      sel.appendChild(opt);
+    });
+  } catch(e) {
+    console.error('loadRegions error:', e);
+  }
+}
+
+// ========== 实时订阅 ==========
+function setupRealtime() {
+  supa.channel('whales-changes')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'whales' }, payload => {
+      console.log('[Realtime] New whale:', payload.new);
+      loadData();
+    })
+    .subscribe(status => {
+      const dot = document.getElementById('realtimeDot');
+      if (status === 'SUBSCRIBED') {
+        dot.className = 'status-dot online pulse';
+      } else {
+        dot.className = 'status-dot offline';
+      }
+    });
+}
+
+// ========== 筛选器 ==========
+function setupFilters() {
+  document.getElementById('searchInput').addEventListener('input', debounce(() => { currentPage = 1; loadData(); }, 300));
+  document.getElementById('minLevel').addEventListener('change', () => { currentPage = 1; loadData(); });
+  document.getElementById('regionFilter').addEventListener('change', () => { currentPage = 1; loadData(); });
+  document.getElementById('sortBy').addEventListener('change', (e) => {
+    currentSort = e.target.value;
+    currentPage = 1;
+    loadData();
+  });
+}
+
+function changeSort(column) {
+  if (currentSort === column) {
+    sortAsc = !sortAsc;
+  } else {
+    currentSort = column;
+    sortAsc = false;
+  }
+  currentPage = 1;
+  loadData();
+}
+
+// ========== 加载数据 ==========
+async function loadData() {
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = `<tr><td colspan="6" class="empty-state">${t('loading')}</td></tr>`;
+
+  try {
+    const search = document.getElementById('searchInput').value.trim();
+    const minLevel = document.getElementById('minLevel').value;
+    const region = document.getElementById('regionFilter').value;
+
+    let query = supa.from('whales').select('*', { count: 'exact' });
+
+    if (search) query = query.ilike('username', `%${search}%`);
+    if (minLevel) query = query.gte('level', parseInt(minLevel));
+    if (region) {
+      query = query.or(`region.eq.${region},inferred_region.eq.${region}`);
+    }
+
+    // 排序
+    query = query.order(currentSort, { ascending: sortAsc });
+
+    // 分页
+    const from = (currentPage - 1) * pageSize;
+    query = query.range(from, from + pageSize - 1);
+
+    const { data, error, count } = await query;
+
+    if (error) throw error;
+
+    totalCount = count;
+    document.getElementById('whaleCount').textContent = count.toLocaleString();
+    document.getElementById('resultCount').textContent = `共 ${count.toLocaleString()} 条`;
+
+    renderStats(data);
+    renderLevelBars(data);
+    renderRooms(data);
+    renderTable(data);
+    renderPagination(count);
+    
+    // 从后端 API 获取全库真实统计
+    fetchStats();
+
+  } catch (err) {
+    console.error('加载失败:', err);
+    tbody.innerHTML = `<tr><td colspan="6" class="empty-state">错误: ${err.message}</td></tr>`;
+  }
+}
+
+// ========== 从后端获取全库统计 ==========
+async function fetchStats() {
+  try {
+    const res = await fetch(API_BASE + '/api/stats');
+    const stats = await res.json();
+    if (stats.error) throw new Error(stats.error);
+    
+    // 更新统计卡片（保留当前页统计作为备用）
+    const statsGrid = document.getElementById('statsGrid');
+    const existing = statsGrid.innerHTML;
+    if (existing && existing.includes('stat-card')) {
+      // 已经有渲染，更新数值
+      const cards = statsGrid.querySelectorAll('.stat-card .num');
+      if (cards[0]) cards[0].textContent = stats.total.toLocaleString();
+      if (cards[1]) cards[1].textContent = stats.lv50plus || 0;
+      if (cards[2]) cards[2].textContent = stats.lv30plus || 0;
+    }
+  } catch(e) {
+    console.error('fetchStats error:', e);
+  }
+}
+
+// ========== 渲染统计卡片 ==========
+function renderStats(data) {
+  // 当前页统计（备用显示）
+  const lv50 = data.filter(d => d.level >= 50).length;
+  const lv30 = data.filter(d => d.level >= 30).length;
+  const active1h = data.filter(d => {
+    if (!d.last_seen) return false;
+    const last = new Date(d.last_seen);
+    return (Date.now() - last) < 3600000;
+  }).length;
+
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card">
+      <div class="lbl">${t('total_users')}</div>
+      <div class="num">${totalCount.toLocaleString()}</div>
+    </div>
+    <div class="stat-card">
+      <div class="lbl">LV50+ ${t('super_whales')}</div>
+      <div class="num" style="color:var(--red)">${lv50}</div>
+    </div>
+    <div class="stat-card">
+      <div class="lbl">LV30+ 大哥</div>
+      <div class="num" style="color:var(--gold)">${lv30}</div>
+    </div>
+    <div class="stat-card">
+      <div class="lbl">${t('active_1h')}</div>
+      <div class="num" style="color:var(--green)">${active1h}</div>
+    </div>
+  `;
+}
+
+// ========== 渲染等级分布 ==========
+function renderLevelBars(data) {
+  const counts = { 50: 0, 40: 0, 30: 0, 20: 0, 10: 0 };
+  data.forEach(d => {
+    if (d.level >= 50) counts[50]++;
+    else if (d.level >= 40) counts[40]++;
+    else if (d.level >= 30) counts[30]++;
+    else if (d.level >= 20) counts[20]++;
+    else counts[10]++;
+  });
+
+  const maxCount = Math.max(...Object.values(counts), 1);
+
+  document.getElementById('levelBars').innerHTML = [50, 40, 30, 20, 10].map(lv => `
+    <div class="bar-row">
+      <span class="bar-label">LV${lv}</span>
+      <div class="bar-track">
+        <div class="bar-fill l${lv}" style="width:${(counts[lv] / maxCount * 100).toFixed(1)}%"></div>
+      </div>
+      <span class="bar-count">${counts[lv]}</span>
+    </div>
+  `).join('');
+}
+
+// ========== 渲染活跃房间 ==========
+function renderRooms(data) {
+  const roomCounts = {};
+  data.forEach(d => {
+    const room = d.current_room || d.source_room || 'unknown';
+    roomCounts[room] = (roomCounts[room] || 0) + 1;
+  });
+
+  const sorted = Object.entries(roomCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 20);
+
+  document.getElementById('roomList').innerHTML = sorted.map(([room, count]) => `
+    <div class="room-item" onclick="filterByRoom('${room}')">
+      <span class="rm"><a href="https://www.tiktok.com/@${encodeURIComponent(room)}/live" target="_blank" style="color:inherit;text-decoration:none" onclick="event.stopPropagation()">${room} <span style="font-size:10px;opacity:0.6">▶</span></a></span>
+      <span class="rc">${count}</span>
+    </div>
+  `).join('');
+}
+
+window.filterByRoom = function(room) {
+  document.getElementById('searchInput').value = room;
+  currentPage = 1;
+  loadData();
+};
+
+// ========== 渲染表格 ==========
+function renderTable(data) {
+  const tbody = document.getElementById('tableBody');
+
+  if (!data || data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" class="empty-state">${t('no_data')}</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = data.map(row => {
+    const lvClass = row.level >= 50 ? 'l50' : row.level >= 40 ? 'l40' : row.level >= 30 ? 'l30' : row.level >= 20 ? 'l20' : 'l10';
+    const timeAgo = formatTimeAgo(row.last_seen);
+    const avatarUrl = row.profile_url ? row.profile_url.replace('/@', '/avatar/') + '.webp' : '';
+
+    return `
+      <tr>
+        <td>
+          <div class="user-cell">
+            <div class="avatar">
+              ${avatarUrl ? `<img src="${avatarUrl}" alt="" onerror="this.parentElement.textContent='?'">` : '?'}
+            </div>
+            <div class="user-info">
+              <a class="user-link" href="https://www.tiktok.com/@${row.username}" target="_blank">${escapeHtml(row.username)}</a>
+              <span class="user-nick">${escapeHtml(row.nickname || '')}</span>
+            </div>
+          </div>
+        </td>
+        <td><span class="lv-badge ${lvClass}">LV${row.level}</span></td>
+        <td><span class="gift-val">${formatNumber(row.total_gifts || 0)}</span></td>
+        <td><span class="region-badge">${row.region || row.inferred_region || '-'}</span></td>
+        <td>${(function(){ const rm = row.source_room || row.current_room || ''; return rm && rm !== 'unknown' ? '<a href="https://www.tiktok.com/@' + encodeURIComponent(rm) + '/live" target="_blank" style="color:var(--blue);text-decoration:none">' + escapeHtml(rm) + ' <span style="font-size:10px">▶</span></a>' : escapeHtml(rm || '-'); })()}</td>
+        <td><span class="time-cell">${timeAgo}</span></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// ========== 分页 ==========
+function renderPagination(total) {
+  const totalPages = Math.ceil(total / pageSize);
+  const div = document.getElementById('pagination');
+
+  if (totalPages <= 1) {
+    div.innerHTML = '';
+    return;
+  }
+
+  let html = `<button onclick="goToPage(1)" ${currentPage === 1 ? 'disabled' : ''}>${currentLang === 'zh' ? '首页' : 'First'}</button>`;
+  html += `<button onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>←</button>`;
+
+  for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
+    html += `<button onclick="goToPage(${i})" class="${i === currentPage ? 'active' : ''}">${i}</button>`;
+  }
+
+  html += `<button onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>→</button>`;
+  html += `<button onclick="goToPage(${totalPages})" ${currentPage === totalPages ? 'disabled' : ''}>${currentLang === 'zh' ? '末页' : 'Last'}</button>`;
+
+  div.innerHTML = html;
+}
+
+function goToPage(page) {
+  currentPage = page;
+  loadData();
+  document.querySelector('.main').scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ========== 工具函数 ==========
+function formatTimeAgo(dateStr) {
+  if (!dateStr) return '-';
+  const date = new Date(dateStr + 'Z');
+  const diff = Math.floor((Date.now() - date) / 1000);
+
+  if (diff < 60) return t('just_now');
+  if (diff < 3600) return `${Math.floor(diff / 60)} ${t('minutes_ago')}`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)} ${t('hours_ago')}`;
+  if (diff < 2592000) return `${Math.floor(diff / 86400)} ${t('days_ago')}`;
+  return date.toLocaleDateString(currentLang === 'zh' ? 'zh-CN' : currentLang === 'id' ? 'id-ID' : 'en-US');
+}
+
+function formatNumber(num) {
+  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+  if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+  return num.toString();
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function debounce(fn, delay) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
+}
+
+function updateClock() {
+  const now = new Date();
+  const tz = Intl.DateTimeFormat(currentLang === 'zh' ? 'zh-CN' : currentLang === 'id' ? 'id-ID' : 'en-US', {
+    timeZone: 'Asia/Bangkok',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  }).format(now);
+  document.getElementById('clock').textContent = tz;
+}
+
+// 移动端菜单
+document.getElementById('menuToggle').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.toggle('show');
+});
+</script>
+</body>
+</html>
