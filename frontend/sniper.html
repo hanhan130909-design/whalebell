@@ -367,7 +367,7 @@ renderCards(window._targets||[])
 }
 }
 
-function openTT(el){var u=el.getAttribute('data-user');window.open('tiktok://user/'+u,'_self');setTimeout(function(){window.open('https://www.tiktok.com/@'+u,'_blank')},800)}
+function openTT(el){var u=el.getAttribute('data-user');var webUrl='https://www.tiktok.com/@'+encodeURIComponent(u);try{window.open('tiktok://user/'+u,'_self')}catch(e){}setTimeout(function(){window.open(webUrl,'_blank')},800);return false}
 
 // Timer
 var sec=1800;setInterval(function(){if(sec>0)sec--;var m=Math.floor(sec/60),s=sec%60;document.getElementById('timer').textContent=('0'+m).slice(-2)+':'+('0'+s).slice(-2)},1000);
