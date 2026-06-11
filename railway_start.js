@@ -1,57 +1,47 @@
-// Step 5: require() route files directly
-const path = require('path');
-const fs = require('fs');
+/**
+ * WhaleBell — 化妆间狙击雷达 (精简版)
+ */
 const express = require('express');
 const cors = require('cors');
+require('dotenv').config();
+
+const PORT = process.env.PORT || 3101;
+const { buildProfiles } = require('./backend/src/portrait_engine');
 
 const app = express();
-const PORT = process.env.PORT || 3101;
-
 app.use(cors());
 app.use(express.json());
 
-// API Routes — require directly (root has all deps)
-// Make internal state accessible for payment verification
-try {
-  const dist = require('./backend/src/distribution');
-  // Export to global for payment module
-  // (distribution.js uses closures; we access via the module)
-} catch(e) {}
-app.use('/api', require('./backend/src/routes'));
-app.use('/api/sniper', require('./backend/src/sniper'));
-app.use('/api/dist', require('./backend/src/distribution'));
-app.use('/api/whales', require('./backend/src/whales_api'));
-app.use('/api/pay', require('./backend/src/payment'));
-
-// Static frontend
-app.get('/sniper.html', (req, res) => {
-  res.set('Content-Type', 'text/html; charset=utf-8');
-  res.send(fs.readFileSync(path.join(__dirname, 'frontend', 'sniper.html'), 'utf-8'));
-});
-app.get('/dashboard.html', (req, res) => {
-  res.set('Content-Type', 'text/html; charset=utf-8');
-  res.send(fs.readFileSync(path.join(__dirname, 'frontend', 'dashboard.html'), 'utf-8'));
-});
-app.get('/index.html', (req, res) => {
-  res.set('Content-Type', 'text/html; charset=utf-8');
-  res.send(fs.readFileSync(path.join(__dirname, 'frontend', 'index.html'), 'utf-8'));
+app.get('/health', (req, res) => {
+  res.json({ status:'ok', service:'whalebell-portrait-engine', version:'1.0.0',
+    uptime:process.uptime(), lastRun:global.lastPortraitRun||null });
 });
 
-app.get('/health', (req, res) => res.json({ status: 'ok' }));
-app.get('/', (req, res) => res.redirect('/sniper.html'));
-app.get('/stats.html', (req, res) => {
-  res.set('Content-Type', 'text/html; charset=utf-8');
-  res.send(fs.readFileSync(path.join(__dirname, 'frontend', 'stats.html'), 'utf-8'));
-});
-app.get('/minimal.html', (req, res) => {
-  res.set('Content-Type', 'text/html; charset=utf-8');
-  res.send(fs.readFileSync(path.join(__dirname, 'frontend', 'minimal.html'), 'utf-8'));
+app.post('/api/portrait/run', async (req, res) => {
+  try {
+    await buildProfiles();
+    global.lastPortraitRun = new Date().toISOString();
+    res.json({ success:true, time:global.lastPortraitRun });
+  } catch(e) { res.status(500).json({ error:e.message }); }
 });
 
-process.on('uncaughtException', (e) => console.error('FATAL:', e.message, e.stack));
+app.get('/api/portrait/stats', async (req, res) => {
+  try {
+    const { createClient } = require('@supabase/supabase-js');
+    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY||process.env.SUPABASE_ANON_KEY);
+    const { count } = await supabase.from('whale_profiles').select('*',{count:'exact',head:true});
+    res.json({ total_profiles:count, lastRun:global.lastPortraitRun, intervalMinutes:15 });
+  } catch(e) { res.status(500).json({ error:e.message }); }
+});
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log('🐋 Step5 (Node22) on 0.0.0.0:' + PORT);
-  console.log('💳 Payment: ' + (process.env.MIDTRANS_SERVER_KEY ? 'Midtrans LIVE' : 'Mock mode'));
-  console.log('Routes: /api, /api/sniper, /api/dist');
+  console.log('WhaleBell Portrait Engine :'+PORT);
+  buildProfiles().then(()=>{global.lastPortraitRun=new Date().toISOString();console.log('[OK] Initial build');})
+    .catch(e=>console.error('[FAIL]',e.message));
+  setInterval(async ()=>{
+    try { await buildProfiles(); global.lastPortraitRun=new Date().toISOString(); }
+    catch(e){ console.error('[FAIL]',e.message); }
+  }, 900000);
 });
+
+process.on('uncaughtException', e => console.error('[FATAL]', e.message));
